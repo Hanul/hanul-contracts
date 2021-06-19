@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.1.0",
-    "ethereumjs-util": "^7.0.10"
+    "ethereumjs-util": "^7.0.10",
+    "skyutil": "^0.0.5"
   }
 }
