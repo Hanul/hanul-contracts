@@ -21,7 +21,9 @@ export type { RNGTest } from "./RNGTest";
 export type { FungibleToken } from "./FungibleToken";
 export type { IERC1271 } from "./IERC1271";
 export type { IFungibleToken } from "./IFungibleToken";
+export type { IItem } from "./IItem";
 export type { INonFungibleToken } from "./INonFungibleToken";
+export type { Item } from "./Item";
 export type { ERC1155 } from "./ERC1155";
 export type { NonFungibleToken } from "./NonFungibleToken";
 
@@ -45,6 +47,8 @@ export { RNGTest__factory } from "./factories/RNGTest__factory";
 export { FungibleToken__factory } from "./factories/FungibleToken__factory";
 export { IERC1271__factory } from "./factories/IERC1271__factory";
 export { IFungibleToken__factory } from "./factories/IFungibleToken__factory";
+export { IItem__factory } from "./factories/IItem__factory";
 export { INonFungibleToken__factory } from "./factories/INonFungibleToken__factory";
+export { Item__factory } from "./factories/Item__factory";
 export { ERC1155__factory } from "./factories/ERC1155__factory";
 export { NonFungibleToken__factory } from "./factories/NonFungibleToken__factory";
