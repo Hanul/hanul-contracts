@@ -15,23 +15,25 @@ describe("FungibleToken", () => {
     const provider = waffle.provider;
     const [admin, other] = provider.getWallets()
 
+    const name = "FungibleToken";
+    const symbol = "FT";
+    const version = "1";
+
     beforeEach(async () => {
         fungibleToken = await deployContract(
             admin,
             FungibleTokenArtifact,
-            [
-                "FungibleToken",
-                "FT",
-            ]
+            [name, symbol, version]
         ) as FungibleToken;
     })
 
     context("new FungibleToken", async () => {
         it("has given data", async () => {
             expect(await fungibleToken.totalSupply()).to.be.equal(0)
-            expect(await fungibleToken.name()).to.be.equal("FungibleToken")
-            expect(await fungibleToken.symbol()).to.be.equal("FT")
+            expect(await fungibleToken.name()).to.be.equal(name)
+            expect(await fungibleToken.symbol()).to.be.equal(symbol)
             expect(await fungibleToken.decimals()).to.be.equal(18)
+            expect(await fungibleToken.version()).to.be.equal(version)
         })
 
         it("check the deployer balance", async () => {
@@ -47,8 +49,8 @@ describe("FungibleToken", () => {
                             keccak256(
                                 toUtf8Bytes("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")
                             ),
-                            keccak256(toUtf8Bytes("FungibleToken")),
-                            keccak256(toUtf8Bytes("1")),
+                            keccak256(toUtf8Bytes(name)),
+                            keccak256(toUtf8Bytes(version)),
                             31337,
                             fungibleToken.address
                         ]

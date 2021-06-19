@@ -30,6 +30,7 @@ describe("HanulCoin", () => {
             expect(await hanulCoin.name()).to.be.equal("HanulCoin")
             expect(await hanulCoin.symbol()).to.be.equal("HANUL")
             expect(await hanulCoin.decimals()).to.be.equal(18)
+            expect(await hanulCoin.version()).to.be.equal("1")
         })
 
         it("check the deployer balance", async () => {

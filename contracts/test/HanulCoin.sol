@@ -8,7 +8,7 @@ contract HanulCoin is FungibleToken, IHanulCoin {
 
     uint256 public constant override INITIAL_SUPPLY = 1988 * 1e18;
 
-    constructor() FungibleToken("HanulCoin", "HANUL") {
+    constructor() FungibleToken("HanulCoin", "HANUL", "1") {
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 

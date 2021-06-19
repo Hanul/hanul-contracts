@@ -5,14 +5,14 @@ export function expandTo18Decimals(n: number): BigNumber {
     return BigNumber.from(n).mul(BigNumber.from(10).pow(18))
 }
 
-function getDomainSeparator(name: string, tokenAddress: string) {
+function getDomainSeparator(name: string, version: string, tokenAddress: string) {
     return ethers.utils.keccak256(
         ethers.utils.defaultAbiCoder.encode(
             ["bytes32", "bytes32", "bytes32", "uint256", "address"],
             [
                 ethers.utils.keccak256(ethers.utils.toUtf8Bytes("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")),
                 ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name)),
-                ethers.utils.keccak256(ethers.utils.toUtf8Bytes("1")),
+                ethers.utils.keccak256(ethers.utils.toUtf8Bytes(version)),
                 31337,
                 tokenAddress
             ]
@@ -34,8 +34,7 @@ export async function getERC20ApprovalDigest(
     nonce: BigNumber,
     deadline: BigNumber
 ): Promise<string> {
-    const name = await token.name()
-    const DOMAIN_SEPARATOR = getDomainSeparator(name, token.address)
+    const DOMAIN_SEPARATOR = getDomainSeparator(await token.name(), await token.version(), token.address)
     return ethers.utils.keccak256(
         ethers.utils.solidityPack(
             ["bytes1", "bytes1", "bytes32", "bytes32"],
@@ -67,8 +66,7 @@ export async function getERC721ApprovalDigest(
     nonce: BigNumber,
     deadline: BigNumber
 ): Promise<string> {
-    const name = await token.name()
-    const DOMAIN_SEPARATOR = getDomainSeparator(name, token.address)
+    const DOMAIN_SEPARATOR = getDomainSeparator(await token.name(), await token.version(), token.address)
     return ethers.utils.keccak256(
         ethers.utils.solidityPack(
             ["bytes1", "bytes1", "bytes32", "bytes32"],
@@ -100,8 +98,7 @@ export async function getERC1155ApprovalDigest(
     nonce: BigNumber,
     deadline: BigNumber
 ): Promise<string> {
-    const name = await token.name()
-    const DOMAIN_SEPARATOR = getDomainSeparator(name, token.address)
+    const DOMAIN_SEPARATOR = getDomainSeparator(await token.name(), await token.version(), token.address)
     return ethers.utils.keccak256(
         ethers.utils.solidityPack(
             ["bytes1", "bytes1", "bytes32", "bytes32"],
