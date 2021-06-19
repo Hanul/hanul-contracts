@@ -27,6 +27,7 @@ interface AnimalNFTInterface extends ethers.utils.Interface {
     "animals(uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "burn(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint(string)": FunctionFragment;
@@ -60,6 +61,7 @@ interface AnimalNFTInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
@@ -123,6 +125,7 @@ interface AnimalNFTInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "animals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -217,6 +220,13 @@ export class AnimalNFT extends Contract {
       owner: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    burn(id: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+
+    "burn(uint256)"(
+      id: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -392,6 +402,13 @@ export class AnimalNFT extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  burn(id: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+
+  "burn(uint256)"(
+    id: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   getApproved(
     tokenId: BigNumberish,
     overrides?: CallOverrides
@@ -559,6 +576,10 @@ export class AnimalNFT extends Contract {
       owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    burn(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "burn(uint256)"(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -746,6 +767,13 @@ export class AnimalNFT extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    burn(id: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+
+    "burn(uint256)"(
+      id: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -926,6 +954,16 @@ export class AnimalNFT extends Contract {
     "balanceOf(address)"(
       owner: string,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    burn(
+      id: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "burn(uint256)"(
+      id: BigNumberish,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     getApproved(

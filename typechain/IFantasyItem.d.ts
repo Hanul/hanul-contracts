@@ -20,23 +20,22 @@ import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
-interface IAnimalNFTInterface extends ethers.utils.Interface {
+interface IFantasyItemInterface extends ethers.utils.Interface {
   functions: {
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "PERMIT_TYPEHASH()": FunctionFragment;
-    "approve(address,uint256)": FunctionFragment;
-    "balanceOf(address)": FunctionFragment;
-    "burn(uint256)": FunctionFragment;
-    "getApproved(uint256)": FunctionFragment;
+    "balanceOf(address,uint256)": FunctionFragment;
+    "balanceOfBatch(address[],uint256[])": FunctionFragment;
+    "burn(uint256,uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mint(string)": FunctionFragment;
-    "nonces(uint256)": FunctionFragment;
-    "ownerOf(uint256)": FunctionFragment;
-    "permit(address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
-    "safeTransferFrom(address,address,uint256)": FunctionFragment;
+    "mint(uint256,uint256)": FunctionFragment;
+    "name()": FunctionFragment;
+    "nonces(address)": FunctionFragment;
+    "permit(address,address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
+    "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
+    "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "transferFrom(address,address,uint256)": FunctionFragment;
     "version()": FunctionFragment;
   };
 
@@ -49,42 +48,38 @@ interface IAnimalNFTInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "approve",
+    functionFragment: "balanceOf",
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(
-    functionFragment: "getApproved",
-    values: [BigNumberish]
+    functionFragment: "balanceOfBatch",
+    values: [string[], BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burn",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
-  encodeFunctionData(functionFragment: "mint", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "nonces",
-    values: [BigNumberish]
+    functionFragment: "mint",
+    values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "ownerOf",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(functionFragment: "nonces", values: [string]): string;
   encodeFunctionData(
     functionFragment: "permit",
-    values: [
-      string,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      BytesLike,
-      BytesLike
-    ]
+    values: [string, string, BigNumberish, BigNumberish, BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "safeBatchTransferFrom",
+    values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom",
-    values: [string, string, BigNumberish]
+    values: [string, string, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
@@ -93,10 +88,6 @@ interface IAnimalNFTInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferFrom",
-    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
@@ -108,21 +99,24 @@ interface IAnimalNFTInterface extends ethers.utils.Interface {
     functionFragment: "PERMIT_TYPEHASH",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getApproved",
+    functionFragment: "balanceOfBatch",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "safeBatchTransferFrom",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "safeTransferFrom",
     data: BytesLike
@@ -135,24 +129,22 @@ interface IAnimalNFTInterface extends ethers.utils.Interface {
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferFrom",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 
   events: {
-    "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "Transfer(address,address,uint256)": EventFragment;
+    "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
+    "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
+    "URI(string,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "URI"): EventFragment;
 }
 
-export class IAnimalNFT extends Contract {
+export class IFantasyItem extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -163,7 +155,7 @@ export class IAnimalNFT extends Contract {
   removeAllListeners(eventName: EventFilter | string): this;
   removeListener(eventName: any, listener: Listener): this;
 
-  interface: IAnimalNFTInterface;
+  interface: IFantasyItemInterface;
 
   functions: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
@@ -174,84 +166,80 @@ export class IAnimalNFT extends Contract {
 
     "PERMIT_TYPEHASH()"(overrides?: CallOverrides): Promise<[string]>;
 
-    approve(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "approve(address,uint256)"(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     balanceOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { balance: BigNumber }>;
-
-    "balanceOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { balance: BigNumber }>;
-
-    burn(id: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
-
-    "burn(uint256)"(
+      account: string,
       id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "balanceOf(address,uint256)"(
+      account: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    balanceOfBatch(
+      accounts: string[],
+      ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
+
+    "balanceOfBatch(address[],uint256[])"(
+      accounts: string[],
+      ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
+
+    burn(
+      id: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string] & { operator: string }>;
-
-    "getApproved(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string] & { operator: string }>;
+    "burn(uint256,uint256)"(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     "isApprovedForAll(address,address)"(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    mint(name: string, overrides?: Overrides): Promise<ContractTransaction>;
-
-    "mint(string)"(
-      name: string,
+    mint(
+      id: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    nonces(id: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    "nonces(uint256)"(
+    "mint(uint256,uint256)"(
       id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    name(overrides?: CallOverrides): Promise<[string]>;
+
+    "name()"(overrides?: CallOverrides): Promise<[string]>;
+
+    nonces(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "nonces(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    ownerOf(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string] & { owner: string }>;
-
-    "ownerOf(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string] & { owner: string }>;
-
     permit(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -259,9 +247,9 @@ export class IAnimalNFT extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "permit(address,uint256,uint256,uint8,bytes32,bytes32)"(
+    "permit(address,address,uint256,uint8,bytes32,bytes32)"(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -269,30 +257,51 @@ export class IAnimalNFT extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "safeTransferFrom(address,address,uint256)"(
+    safeBatchTransferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    safeTransferFrom(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setApprovalForAll(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setApprovalForAll(address,bool)"(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -305,20 +314,6 @@ export class IAnimalNFT extends Contract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    transferFrom(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "transferFrom(address,address,uint256)"(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
 
     version(overrides?: CallOverrides): Promise<[string]>;
 
@@ -333,78 +328,80 @@ export class IAnimalNFT extends Contract {
 
   "PERMIT_TYPEHASH()"(overrides?: CallOverrides): Promise<string>;
 
-  approve(
-    to: string,
-    tokenId: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "approve(address,uint256)"(
-    to: string,
-    tokenId: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  "balanceOf(address)"(
-    owner: string,
+  balanceOf(
+    account: string,
+    id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  burn(id: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
-
-  "burn(uint256)"(
+  "balanceOf(address,uint256)"(
+    account: string,
     id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  balanceOfBatch(
+    accounts: string[],
+    ids: BigNumberish[],
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
+
+  "balanceOfBatch(address[],uint256[])"(
+    accounts: string[],
+    ids: BigNumberish[],
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
+
+  burn(
+    id: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  getApproved(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  "getApproved(uint256)"(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  "burn(uint256,uint256)"(
+    id: BigNumberish,
+    amount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   isApprovedForAll(
-    owner: string,
+    account: string,
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   "isApprovedForAll(address,address)"(
-    owner: string,
+    account: string,
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  mint(name: string, overrides?: Overrides): Promise<ContractTransaction>;
-
-  "mint(string)"(
-    name: string,
+  mint(
+    id: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  nonces(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-  "nonces(uint256)"(
+  "mint(uint256,uint256)"(
     id: BigNumberish,
+    amount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  name(overrides?: CallOverrides): Promise<string>;
+
+  "name()"(overrides?: CallOverrides): Promise<string>;
+
+  nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "nonces(address)"(
+    owner: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  "ownerOf(uint256)"(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
   permit(
+    owner: string,
     spender: string,
-    id: BigNumberish,
     deadline: BigNumberish,
     v: BigNumberish,
     r: BytesLike,
@@ -412,9 +409,9 @@ export class IAnimalNFT extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "permit(address,uint256,uint256,uint8,bytes32,bytes32)"(
+  "permit(address,address,uint256,uint8,bytes32,bytes32)"(
+    owner: string,
     spender: string,
-    id: BigNumberish,
     deadline: BigNumberish,
     v: BigNumberish,
     r: BytesLike,
@@ -422,30 +419,51 @@ export class IAnimalNFT extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "safeTransferFrom(address,address,uint256)"(
+  safeBatchTransferFrom(
     from: string,
     to: string,
-    tokenId: BigNumberish,
+    ids: BigNumberish[],
+    amounts: BigNumberish[],
+    data: BytesLike,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "safeTransferFrom(address,address,uint256,bytes)"(
+  "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"(
     from: string,
     to: string,
-    tokenId: BigNumberish,
+    ids: BigNumberish[],
+    amounts: BigNumberish[],
+    data: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  safeTransferFrom(
+    from: string,
+    to: string,
+    id: BigNumberish,
+    amount: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "safeTransferFrom(address,address,uint256,uint256,bytes)"(
+    from: string,
+    to: string,
+    id: BigNumberish,
+    amount: BigNumberish,
     data: BytesLike,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setApprovalForAll(
     operator: string,
-    _approved: boolean,
+    approved: boolean,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setApprovalForAll(address,bool)"(
     operator: string,
-    _approved: boolean,
+    approved: boolean,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -458,20 +476,6 @@ export class IAnimalNFT extends Contract {
     interfaceId: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  transferFrom(
-    from: string,
-    to: string,
-    tokenId: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "transferFrom(address,address,uint256)"(
-    from: string,
-    to: string,
-    tokenId: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
 
   version(overrides?: CallOverrides): Promise<string>;
 
@@ -486,72 +490,80 @@ export class IAnimalNFT extends Contract {
 
     "PERMIT_TYPEHASH()"(overrides?: CallOverrides): Promise<string>;
 
-    approve(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "approve(address,uint256)"(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "balanceOf(address)"(
-      owner: string,
+    balanceOf(
+      account: string,
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    burn(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
-
-    "burn(uint256)"(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
-
-    getApproved(
-      tokenId: BigNumberish,
+    "balanceOf(address,uint256)"(
+      account: string,
+      id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<string>;
+    ): Promise<BigNumber>;
 
-    "getApproved(uint256)"(
-      tokenId: BigNumberish,
+    balanceOfBatch(
+      accounts: string[],
+      ids: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<string>;
+    ): Promise<BigNumber[]>;
+
+    "balanceOfBatch(address[],uint256[])"(
+      accounts: string[],
+      ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
+
+    burn(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "burn(uint256,uint256)"(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     "isApprovedForAll(address,address)"(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    mint(name: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "mint(string)"(name: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    nonces(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "nonces(uint256)"(
+    mint(
       id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "mint(uint256,uint256)"(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    name(overrides?: CallOverrides): Promise<string>;
+
+    "name()"(overrides?: CallOverrides): Promise<string>;
+
+    nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "nonces(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    "ownerOf(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
     permit(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -559,9 +571,9 @@ export class IAnimalNFT extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "permit(address,uint256,uint256,uint8,bytes32,bytes32)"(
+    "permit(address,address,uint256,uint8,bytes32,bytes32)"(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -569,30 +581,51 @@ export class IAnimalNFT extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "safeTransferFrom(address,address,uint256)"(
+    safeBatchTransferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    safeTransferFrom(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
       data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setApprovalForAll(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setApprovalForAll(address,bool)"(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -606,43 +639,35 @@ export class IAnimalNFT extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    transferFrom(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "transferFrom(address,address,uint256)"(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     version(overrides?: CallOverrides): Promise<string>;
 
     "version()"(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
-    Approval(
-      owner: string | null,
-      approved: string | null,
-      tokenId: BigNumberish | null
-    ): EventFilter;
-
     ApprovalForAll(
-      owner: string | null,
+      account: string | null,
       operator: string | null,
       approved: null
     ): EventFilter;
 
-    Transfer(
+    TransferBatch(
+      operator: string | null,
       from: string | null,
       to: string | null,
-      tokenId: BigNumberish | null
+      ids: null,
+      values: null
     ): EventFilter;
+
+    TransferSingle(
+      operator: string | null,
+      from: string | null,
+      to: string | null,
+      id: null,
+      value: null
+    ): EventFilter;
+
+    URI(value: null, id: BigNumberish | null): EventFilter;
   };
 
   estimateGas: {
@@ -654,78 +679,80 @@ export class IAnimalNFT extends Contract {
 
     "PERMIT_TYPEHASH()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    approve(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "approve(address,uint256)"(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "balanceOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    burn(id: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
-
-    "burn(uint256)"(
+    balanceOf(
+      account: string,
       id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOf(address,uint256)"(
+      account: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    balanceOfBatch(
+      accounts: string[],
+      ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "balanceOfBatch(address[],uint256[])"(
+      accounts: string[],
+      ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    burn(
+      id: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getApproved(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
+    "burn(uint256,uint256)"(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     "isApprovedForAll(address,address)"(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    mint(name: string, overrides?: Overrides): Promise<BigNumber>;
-
-    "mint(string)"(name: string, overrides?: Overrides): Promise<BigNumber>;
-
-    nonces(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "nonces(uint256)"(
+    mint(
       id: BigNumberish,
-      overrides?: CallOverrides
+      amount: BigNumberish,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
-    ownerOf(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
+    "mint(uint256,uint256)"(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "ownerOf(uint256)"(
-      tokenId: BigNumberish,
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "nonces(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     permit(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -733,9 +760,9 @@ export class IAnimalNFT extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "permit(address,uint256,uint256,uint8,bytes32,bytes32)"(
+    "permit(address,address,uint256,uint8,bytes32,bytes32)"(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -743,30 +770,51 @@ export class IAnimalNFT extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "safeTransferFrom(address,address,uint256)"(
+    safeBatchTransferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    safeTransferFrom(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setApprovalForAll(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setApprovalForAll(address,bool)"(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -778,20 +826,6 @@ export class IAnimalNFT extends Contract {
     "supportsInterface(bytes4)"(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    transferFrom(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "transferFrom(address,address,uint256)"(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
     ): Promise<BigNumber>;
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
@@ -812,90 +846,83 @@ export class IAnimalNFT extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    approve(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "approve(address,uint256)"(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
     balanceOf(
-      owner: string,
+      account: string,
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "balanceOf(address)"(
-      owner: string,
+    "balanceOf(address,uint256)"(
+      account: string,
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    balanceOfBatch(
+      accounts: string[],
+      ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "balanceOfBatch(address[],uint256[])"(
+      accounts: string[],
+      ids: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     burn(
       id: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "burn(uint256)"(
+    "burn(uint256,uint256)"(
       id: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getApproved(uint256)"(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "isApprovedForAll(address,address)"(
-      owner: string,
+      account: string,
       operator: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    mint(name: string, overrides?: Overrides): Promise<PopulatedTransaction>;
-
-    "mint(string)"(
-      name: string,
+    mint(
+      id: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    "mint(uint256,uint256)"(
+      id: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     nonces(
-      id: BigNumberish,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "nonces(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    ownerOf(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "ownerOf(uint256)"(
-      tokenId: BigNumberish,
+    "nonces(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     permit(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -903,9 +930,9 @@ export class IAnimalNFT extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "permit(address,uint256,uint256,uint8,bytes32,bytes32)"(
+    "permit(address,address,uint256,uint8,bytes32,bytes32)"(
+      owner: string,
       spender: string,
-      id: BigNumberish,
       deadline: BigNumberish,
       v: BigNumberish,
       r: BytesLike,
@@ -913,30 +940,51 @@ export class IAnimalNFT extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "safeTransferFrom(address,address,uint256)"(
+    safeBatchTransferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"(
       from: string,
       to: string,
-      tokenId: BigNumberish,
+      ids: BigNumberish[],
+      amounts: BigNumberish[],
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    safeTransferFrom(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setApprovalForAll(address,bool)"(
       operator: string,
-      _approved: boolean,
+      approved: boolean,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -948,20 +996,6 @@ export class IAnimalNFT extends Contract {
     "supportsInterface(bytes4)"(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    transferFrom(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(address,address,uint256)"(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
