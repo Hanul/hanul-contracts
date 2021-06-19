@@ -3,12 +3,9 @@ import hardhat from 'hardhat';
 async function main() {
     console.log("deploy start")
 
-    const FungibleToken = await hardhat.ethers.getContractFactory("FungibleToken")
-    const fungibleToken = await FungibleToken.deploy(
-        "FungibleToken",
-        "FT",
-    )
-    console.log(`FungibleToken address:${fungibleToken.address}`)
+    const HanulCoin = await hardhat.ethers.getContractFactory("HanulCoin")
+    const hanulCoin = await HanulCoin.deploy()
+    console.log(`HanulCoin address: ${hanulCoin.address}`)
 }
 
 main()

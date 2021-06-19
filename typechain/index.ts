@@ -4,6 +4,8 @@
 export type { ERC20 } from "./ERC20";
 export type { IERC20Metadata } from "./IERC20Metadata";
 export type { IERC20 } from "./IERC20";
+export type { HanulCoin } from "./HanulCoin";
+export type { IHanulCoin } from "./IHanulCoin";
 export type { FungibleToken } from "./FungibleToken";
 export type { IERC1271 } from "./IERC1271";
 export type { IFungibleToken } from "./IFungibleToken";
@@ -11,6 +13,8 @@ export type { IFungibleToken } from "./IFungibleToken";
 export { ERC20__factory } from "./factories/ERC20__factory";
 export { IERC20Metadata__factory } from "./factories/IERC20Metadata__factory";
 export { IERC20__factory } from "./factories/IERC20__factory";
+export { HanulCoin__factory } from "./factories/HanulCoin__factory";
+export { IHanulCoin__factory } from "./factories/IHanulCoin__factory";
 export { FungibleToken__factory } from "./factories/FungibleToken__factory";
 export { IERC1271__factory } from "./factories/IERC1271__factory";
 export { IFungibleToken__factory } from "./factories/IFungibleToken__factory";
