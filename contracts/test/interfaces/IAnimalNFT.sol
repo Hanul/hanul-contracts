@@ -6,4 +6,5 @@ import "../../token/interfaces/INonFungibleToken.sol";
 interface IAnimalNFT is INonFungibleToken {
 
     function mint(string memory name) external returns (uint256 id);
+    function burn(uint256 id) external;
 }

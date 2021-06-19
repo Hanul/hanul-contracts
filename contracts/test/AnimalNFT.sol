@@ -24,4 +24,9 @@ contract AnimalNFT is NonFungibleToken, IAnimalNFT {
 
         _mint(msg.sender, id);
     }
+
+    function burn(uint256 id) external override {
+        require(msg.sender == ownerOf(id));
+        _burn(id);
+    }
 }
