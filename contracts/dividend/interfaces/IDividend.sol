@@ -9,8 +9,8 @@ interface IDividend is IFungibleToken {
     event Withdrawn(address indexed to, uint256 withdrawn);
 
     function token() public view returns (IERC20);
-    function withdraw() public;
     function accumulativeOf(address owner) public view returns (uint256);
     function withdrawnOf(address owner) public view returns (uint256);
     function withdrawableOf(address owner) public view returns (uint256);
+    function withdraw() public;
 }
