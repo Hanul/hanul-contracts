@@ -6,7 +6,7 @@ import "./interfaces/IDividend.sol";
 
 contract Dividend is FungibleToken, IDividend {
 
-    IERC20 public token;
+    IERC20 override public token;
     uint256 internal currentBalance = 0;
 
     uint256 constant internal pointsMultiplier = 2**128;
@@ -35,11 +35,11 @@ contract Dividend is FungibleToken, IDividend {
         currentBalance = balance;
     }
 
-    function withdrawnOf(address owner) public view returns (uint256) {
+    function withdrawnOf(address owner) override public view returns (uint256) {
         return withdrawns[owner];
     }
 
-    function accumulativeOf(address owner) public view returns (uint256) {
+    function accumulativeOf(address owner) override public view returns (uint256) {
         uint256 _pointsPerShare = pointsPerShare;
         uint256 totalBalance = totalSupply();
         require(totalBalance > 0);
@@ -51,7 +51,7 @@ contract Dividend is FungibleToken, IDividend {
         return uint256(int256(_pointsPerShare * balanceOf(owner)) + pointsCorrection[owner]) / pointsMultiplier;
     }
 
-    function withdrawableOf(address owner) external view returns (uint256) {
+    function withdrawableOf(address owner) override external view returns (uint256) {
         return accumulativeOf(owner) - withdrawns[owner];
     }
 
@@ -63,7 +63,7 @@ contract Dividend is FungibleToken, IDividend {
         return _accumulativeOf(owner) - withdrawns[owner];
     }
 
-    function withdraw() public {
+    function withdraw() override public {
         updateBalance();
         uint256 withdrawable = _withdrawableOf(msg.sender);
         if (withdrawable > 0) {
@@ -74,7 +74,7 @@ contract Dividend is FungibleToken, IDividend {
         }
     }
 
-    function _transfer(address from, address to, uint256 value) external {
+    function _transfer(address from, address to, uint256 value) override internal {
         super._transfer(from, to, value);
         updateBalance();
         int256 correction = int256(pointsPerShare * value);
@@ -82,13 +82,13 @@ contract Dividend is FungibleToken, IDividend {
         pointsCorrection[to] -= correction;
     }
 
-    function _mint(address to, uint256 value) external {
+    function _mint(address to, uint256 value) override internal {
         super._mint(to, value);
         updateBalance();
         pointsCorrection[to] -= int256(pointsPerShare * value);
     }
 
-    function _burn(address from, uint256 value) external {
+    function _burn(address from, uint256 value) override internal {
         super._burn(from, value);
         updateBalance();
         pointsCorrection[from] += int256(pointsPerShare * value);
