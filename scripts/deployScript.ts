@@ -1,4 +1,4 @@
-import hardhat from 'hardhat';
+import hardhat from "hardhat";
 
 async function main() {
     console.log("deploy start")

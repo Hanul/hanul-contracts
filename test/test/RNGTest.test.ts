@@ -6,7 +6,6 @@ import RNGArtifact from "../../artifacts/contracts/rng/RNG.sol/RNG.json";
 import RNGTestArtifact from "../../artifacts/contracts/test/RNGTest.sol/RNGTest.json";
 import { RNG } from "../../typechain/RNG";
 import { RNGTest } from "../../typechain/RNGTest";
-import { expandTo18Decimals } from "../shared/utilities";
 
 const { deployContract } = waffle;
 
@@ -15,7 +14,7 @@ describe("RNGTest", () => {
     let rngTest: RNGTest;
 
     const provider = waffle.provider;
-    const [admin] = provider.getWallets()
+    const [admin] = provider.getWallets();
 
     beforeEach(async () => {
         rng = await deployContract(

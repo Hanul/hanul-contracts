@@ -5,7 +5,8 @@ import { defaultAbiCoder, hexlify, keccak256, toUtf8Bytes } from "ethers/lib/uti
 import { waffle } from "hardhat";
 import HanulCoinArtifact from "../../artifacts/contracts/test/HanulCoin.sol/HanulCoin.json";
 import { HanulCoin } from "../../typechain/HanulCoin";
-import { expandTo18Decimals, getERC20ApprovalDigest } from "../shared/utilities";
+import { expandTo18Decimals } from "../shared/utils/number";
+import { getERC20ApprovalDigest } from "../shared/utils/standard";
 
 const { deployContract } = waffle;
 
@@ -13,7 +14,7 @@ describe("HanulCoin", () => {
     let hanulCoin: HanulCoin;
 
     const provider = waffle.provider;
-    const [admin, other] = provider.getWallets()
+    const [admin, other] = provider.getWallets();
     const totalSupply = expandTo18Decimals(1988);
 
     beforeEach(async () => {

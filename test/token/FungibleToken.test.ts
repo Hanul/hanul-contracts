@@ -1,11 +1,12 @@
 import { expect } from "chai";
+import { ecsign } from "ethereumjs-util";
 import { BigNumber, constants } from "ethers";
 import { defaultAbiCoder, hexlify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { waffle } from "hardhat";
 import FungibleTokenArtifact from "../../artifacts/contracts/token/FungibleToken.sol/FungibleToken.json";
 import { FungibleToken } from "../../typechain/FungibleToken";
-import { expandTo18Decimals, getERC20ApprovalDigest } from "../shared/utilities";
-import { ecsign } from "ethereumjs-util";
+import { expandTo18Decimals } from "../shared/utils/number";
+import { getERC20ApprovalDigest } from "../shared/utils/standard";
 
 const { deployContract } = waffle;
 
@@ -13,7 +14,7 @@ describe("FungibleToken", () => {
     let fungibleToken: FungibleToken;
 
     const provider = waffle.provider;
-    const [admin, other] = provider.getWallets()
+    const [admin, other] = provider.getWallets();
 
     const name = "FungibleToken";
     const symbol = "FT";
