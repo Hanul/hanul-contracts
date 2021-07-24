@@ -43,7 +43,7 @@ contract BuyOrderBook is IBuyOrderBook {
         emit Remove(orderId);
     }
 
-    function sell(uint256 orderId, uint256 amount) override external {
+    function sell(uint256 orderId, uint256 amount) override public {
         BuyOrder storage order = orders[orderId];
         uint256 price = order.price * amount / order.amount;
         token.transferFrom(msg.sender, order.buyer, amount);
@@ -54,6 +54,16 @@ contract BuyOrderBook is IBuyOrderBook {
         }
         payable(msg.sender).transfer(price);
         emit Sell(orderId, msg.sender, amount);
+    }
+
+    function sellWithPermit(uint256 orderId, uint256 amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) override external {
+        token.permit(msg.sender, address(this), amount, deadline, v, r, s);
+        sell(orderId, amount);
     }
 
     function cancel(uint256 orderId) override external {

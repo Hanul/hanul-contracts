@@ -1,11 +1,15 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { expect } from "chai";
+import { ecsign } from "ethereumjs-util";
+import { constants } from "ethers";
+import { hexlify } from "ethers/lib/utils";
 import { waffle } from "hardhat";
 import SellOrderBookArtifact from "../../artifacts/contracts/exchange/SellOrderBook.sol/SellOrderBook.json";
 import HanulCoinArtifact from "../../artifacts/contracts/test/HanulCoin.sol/HanulCoin.json";
 import { HanulCoin } from "../../typechain/HanulCoin";
 import { SellOrderBook } from "../../typechain/SellOrderBook";
 import { expandTo18Decimals } from "../shared/utils/number";
+import { getERC20ApprovalDigest } from "../shared/utils/standard";
 
 const { deployContract } = waffle;
 
@@ -35,6 +39,28 @@ describe("SellOrderBook", () => {
             const price = expandTo18Decimals(1)
             await hanulCoin.approve(sellOrderBook.address, value);
             await expect(sellOrderBook.sell(value, price))
+                .to.emit(sellOrderBook, "Sell")
+                .withArgs(0, admin.address, value, price)
+            expect(await sellOrderBook.get(0)).to.deep.eq([admin.address, value, price])
+            expect(await sellOrderBook.count()).to.eq(1)
+        })
+
+        it("sell with permit", async () => {
+            const value = expandTo18Decimals(100)
+            const price = expandTo18Decimals(1)
+
+            const nonce = await hanulCoin.nonces(admin.address)
+            const deadline = constants.MaxUint256
+            const digest = await getERC20ApprovalDigest(
+                hanulCoin,
+                { owner: admin.address, spender: sellOrderBook.address, value },
+                nonce,
+                deadline
+            )
+
+            const { v, r, s } = ecsign(Buffer.from(digest.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
+
+            await expect(sellOrderBook.sellWithPermit(value, price, deadline, v, hexlify(r), hexlify(s)))
                 .to.emit(sellOrderBook, "Sell")
                 .withArgs(0, admin.address, value, price)
             expect(await sellOrderBook.get(0)).to.deep.eq([admin.address, value, price])

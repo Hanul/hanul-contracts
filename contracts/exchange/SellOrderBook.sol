@@ -28,7 +28,7 @@ contract SellOrderBook is ISellOrderBook {
         return (order.seller, order.amount, order.price);
     }
 
-    function sell(uint256 amount, uint256 price) override external {
+    function sell(uint256 amount, uint256 price) override public {
         token.transferFrom(msg.sender, address(this), amount);
         uint256 orderId = orders.length;
         orders.push(SellOrder({
@@ -37,6 +37,16 @@ contract SellOrderBook is ISellOrderBook {
             price: price
         }));
         emit Sell(orderId, msg.sender, amount, price);
+    }
+
+    function sellWithPermit(uint256 amount, uint256 price,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) override external {
+        token.permit(msg.sender, address(this), amount, deadline, v, r, s);
+        sell(amount, price);
     }
 
     function remove(uint256 orderId) internal {

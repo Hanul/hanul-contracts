@@ -10,7 +10,15 @@ interface ISellOrderBook {
 
     function count() external view returns (uint256);
     function get(uint256 orderId) external view returns (address seller, uint256 amount, uint256 price);
+    
     function sell(uint256 amount, uint256 price) external;
+    function sellWithPermit(uint256 amount, uint256 price,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
     function buy(uint256 orderId) payable external;
     function cancel(uint256 orderId) external;
 }
