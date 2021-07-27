@@ -5,12 +5,12 @@ import "../../token/interfaces/IFungibleToken.sol";
 
 interface IDividend is IFungibleToken {
 
-    event Distributed(address indexed by, uint256 distributed);
-    event Withdrawn(address indexed to, uint256 withdrawn);
+    event Distribute(address indexed by, uint256 distributed);
+    event Claim(address indexed to, uint256 claimed);
 
     function token() external view returns (IERC20);
     function accumulativeOf(address owner) external view returns (uint256);
-    function withdrawnOf(address owner) external view returns (uint256);
-    function withdrawableOf(address owner) external view returns (uint256);
-    function withdraw() external;
+    function claimedOf(address owner) external view returns (uint256);
+    function claimableOf(address owner) external view returns (uint256);
+    function claim() external;
 }

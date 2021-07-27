@@ -40,7 +40,7 @@ contract FungibleToken is ERC20, IFungibleToken {
         address from,
         address to,
         uint256 amount
-    ) public override(ERC20, IERC20) returns (bool) {
+    ) public virtual override(ERC20, IERC20) returns (bool) {
         uint256 _allowance = super.allowance(from, msg.sender);
         if (_allowance != type(uint256).max) {
             _approve(from, _msgSender(), _allowance - amount);

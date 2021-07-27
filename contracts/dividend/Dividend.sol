@@ -12,7 +12,7 @@ contract Dividend is FungibleToken, IDividend {
     uint256 constant internal pointsMultiplier = 2**128;
     uint256 internal pointsPerShare = 0;
     mapping(address => int256) internal pointsCorrection;
-    mapping(address => uint256) internal withdrawns;
+    mapping(address => uint256) internal claimed;
 
     constructor(
         string memory name,
@@ -30,13 +30,13 @@ contract Dividend is FungibleToken, IDividend {
         uint256 value = balance - currentBalance;
         if (value > 0) {
             pointsPerShare += value * pointsMultiplier / totalSupply();
-            emit Distributed(msg.sender, value);
+            emit Distribute(msg.sender, value);
         }
         currentBalance = balance;
     }
 
-    function withdrawnOf(address owner) override public view returns (uint256) {
-        return withdrawns[owner];
+    function claimedOf(address owner) override public view returns (uint256) {
+        return claimed[owner];
     }
 
     function accumulativeOf(address owner) override public view returns (uint256) {
@@ -51,26 +51,26 @@ contract Dividend is FungibleToken, IDividend {
         return uint256(int256(_pointsPerShare * balanceOf(owner)) + pointsCorrection[owner]) / pointsMultiplier;
     }
 
-    function withdrawableOf(address owner) override external view returns (uint256) {
-        return accumulativeOf(owner) - withdrawns[owner];
+    function claimableOf(address owner) override external view returns (uint256) {
+        return accumulativeOf(owner) - claimed[owner];
     }
 
     function _accumulativeOf(address owner) internal view returns (uint256) {
         return uint256(int256(pointsPerShare * balanceOf(owner)) + pointsCorrection[owner]) / pointsMultiplier;
     }
 
-    function _withdrawableOf(address owner) internal view returns (uint256) {
-        return _accumulativeOf(owner) - withdrawns[owner];
+    function _claimableOf(address owner) internal view returns (uint256) {
+        return _accumulativeOf(owner) - claimed[owner];
     }
 
-    function withdraw() override public {
+    function claim() override public {
         updateBalance();
-        uint256 withdrawable = _withdrawableOf(msg.sender);
-        if (withdrawable > 0) {
-            withdrawns[msg.sender] += withdrawable;
-            emit Withdrawn(msg.sender, withdrawable);
-            token.transfer(msg.sender, withdrawable);
-            currentBalance -= withdrawable;
+        uint256 claimable = _claimableOf(msg.sender);
+        if (claimable > 0) {
+            claimed[msg.sender] += claimable;
+            emit Claim(msg.sender, claimable);
+            token.transfer(msg.sender, claimable);
+            currentBalance -= claimable;
         }
     }
 
