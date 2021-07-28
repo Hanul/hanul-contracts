@@ -28,6 +28,9 @@ interface IDividendInterface extends ethers.utils.Interface {
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "claim()": FunctionFragment;
+    "claimableOf(address)": FunctionFragment;
+    "claimedOf(address)": FunctionFragment;
     "nonces(address)": FunctionFragment;
     "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "token()": FunctionFragment;
@@ -35,9 +38,6 @@ interface IDividendInterface extends ethers.utils.Interface {
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "version()": FunctionFragment;
-    "withdraw()": FunctionFragment;
-    "withdrawableOf(address)": FunctionFragment;
-    "withdrawnOf(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -61,6 +61,9 @@ interface IDividendInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(functionFragment: "claim", values?: undefined): string;
+  encodeFunctionData(functionFragment: "claimableOf", values: [string]): string;
+  encodeFunctionData(functionFragment: "claimedOf", values: [string]): string;
   encodeFunctionData(functionFragment: "nonces", values: [string]): string;
   encodeFunctionData(
     functionFragment: "permit",
@@ -88,12 +91,6 @@ interface IDividendInterface extends ethers.utils.Interface {
     values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
-  encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "withdrawableOf",
-    values: [string]
-  ): string;
-  encodeFunctionData(functionFragment: "withdrawnOf", values: [string]): string;
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
@@ -110,6 +107,12 @@ interface IDividendInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "claimableOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "claimedOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
@@ -123,27 +126,18 @@ interface IDividendInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawableOf",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawnOf",
-    data: BytesLike
-  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
-    "Distributed(address,uint256)": EventFragment;
+    "Claim(address,uint256)": EventFragment;
+    "Distribute(address,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "Withdrawn(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Distributed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Claim"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Distribute"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Withdrawn"): EventFragment;
 }
 
 export class IDividend extends Contract {
@@ -206,6 +200,24 @@ export class IDividend extends Contract {
 
     "balanceOf(address)"(
       account: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    claim(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "claim()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    claimableOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "claimableOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    claimedOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "claimedOf(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -275,27 +287,6 @@ export class IDividend extends Contract {
     version(overrides?: CallOverrides): Promise<[string]>;
 
     "version()"(overrides?: CallOverrides): Promise<[string]>;
-
-    withdraw(overrides?: Overrides): Promise<ContractTransaction>;
-
-    "withdraw()"(overrides?: Overrides): Promise<ContractTransaction>;
-
-    withdrawableOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "withdrawableOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    withdrawnOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    "withdrawnOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
   };
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
@@ -341,6 +332,24 @@ export class IDividend extends Contract {
 
   "balanceOf(address)"(
     account: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  claim(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "claim()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  claimableOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "claimableOf(address)"(
+    owner: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  claimedOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "claimedOf(address)"(
+    owner: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -411,24 +420,6 @@ export class IDividend extends Contract {
 
   "version()"(overrides?: CallOverrides): Promise<string>;
 
-  withdraw(overrides?: Overrides): Promise<ContractTransaction>;
-
-  "withdraw()"(overrides?: Overrides): Promise<ContractTransaction>;
-
-  withdrawableOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  "withdrawableOf(address)"(
-    owner: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  withdrawnOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  "withdrawnOf(address)"(
-    owner: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   callStatic: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
@@ -476,6 +467,24 @@ export class IDividend extends Contract {
 
     "balanceOf(address)"(
       account: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    claim(overrides?: CallOverrides): Promise<void>;
+
+    "claim()"(overrides?: CallOverrides): Promise<void>;
+
+    claimableOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "claimableOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    claimedOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "claimedOf(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -545,27 +554,6 @@ export class IDividend extends Contract {
     version(overrides?: CallOverrides): Promise<string>;
 
     "version()"(overrides?: CallOverrides): Promise<string>;
-
-    withdraw(overrides?: CallOverrides): Promise<void>;
-
-    "withdraw()"(overrides?: CallOverrides): Promise<void>;
-
-    withdrawableOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "withdrawableOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    withdrawnOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "withdrawnOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   filters: {
@@ -575,11 +563,11 @@ export class IDividend extends Contract {
       value: null
     ): EventFilter;
 
-    Distributed(by: string | null, distributed: null): EventFilter;
+    Claim(to: string | null, claimed: null): EventFilter;
+
+    Distribute(by: string | null, distributed: null): EventFilter;
 
     Transfer(from: string | null, to: string | null, value: null): EventFilter;
-
-    Withdrawn(to: string | null, withdrawn: null): EventFilter;
   };
 
   estimateGas: {
@@ -629,6 +617,24 @@ export class IDividend extends Contract {
 
     "balanceOf(address)"(
       account: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    claim(overrides?: Overrides): Promise<BigNumber>;
+
+    "claim()"(overrides?: Overrides): Promise<BigNumber>;
+
+    claimableOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "claimableOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    claimedOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "claimedOf(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -698,27 +704,6 @@ export class IDividend extends Contract {
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
     "version()"(overrides?: CallOverrides): Promise<BigNumber>;
-
-    withdraw(overrides?: Overrides): Promise<BigNumber>;
-
-    "withdraw()"(overrides?: Overrides): Promise<BigNumber>;
-
-    withdrawableOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "withdrawableOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    withdrawnOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "withdrawnOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -775,6 +760,30 @@ export class IDividend extends Contract {
 
     "balanceOf(address)"(
       account: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    claim(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "claim()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    claimableOf(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "claimableOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    claimedOf(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "claimedOf(address)"(
+      owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -847,29 +856,5 @@ export class IDividend extends Contract {
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "version()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    withdraw(overrides?: Overrides): Promise<PopulatedTransaction>;
-
-    "withdraw()"(overrides?: Overrides): Promise<PopulatedTransaction>;
-
-    withdrawableOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "withdrawableOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    withdrawnOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "withdrawnOf(address)"(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
   };
 }
