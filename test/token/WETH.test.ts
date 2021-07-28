@@ -44,25 +44,31 @@ describe("WETH", () => {
         it("deposit", async () => {
             await weth.deposit({ value: 100 });
             expect(await weth.balanceOf(admin.address)).to.be.equal(100)
+            expect(await provider.getBalance(weth.address)).to.be.equal(100)
         })
 
         it("deposit eth", async () => {
             await admin.sendTransaction({ to: weth.address, value: 100 });
             expect(await weth.balanceOf(admin.address)).to.be.equal(100)
+            expect(await provider.getBalance(weth.address)).to.be.equal(100)
         })
 
         it("withdraw", async () => {
             await weth.deposit({ value: 100 });
             expect(await weth.balanceOf(admin.address)).to.be.equal(100)
+            expect(await provider.getBalance(weth.address)).to.be.equal(100)
             await weth.withdraw(100);
             expect(await weth.balanceOf(admin.address)).to.be.equal(0)
+            expect(await provider.getBalance(weth.address)).to.be.equal(0)
         })
 
         it("withdraw eth", async () => {
             await admin.sendTransaction({ to: weth.address, value: 100 });
             expect(await weth.balanceOf(admin.address)).to.be.equal(100)
+            expect(await provider.getBalance(weth.address)).to.be.equal(100)
             await weth.withdraw(100);
             expect(await weth.balanceOf(admin.address)).to.be.equal(0)
+            expect(await provider.getBalance(weth.address)).to.be.equal(0)
         })
 
         it("data for permit", async () => {
