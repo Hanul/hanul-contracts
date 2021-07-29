@@ -4,7 +4,7 @@ pragma solidity ^0.8.5;
 import "../token/FungibleToken.sol";
 import "./interfaces/IWETH.sol";
 
-contract WETH is FungibleToken("Wrapped Ether", "WETH", "1"), IWETH {
+contract WETH is FungibleToken("Wrapped Ether", "WETH", "11"), IWETH {
 
     receive() external payable {
         deposit();

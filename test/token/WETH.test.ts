@@ -18,7 +18,7 @@ describe("WETH", () => {
 
     const name = "Wrapped Ether";
     const symbol = "WETH";
-    const version = "1";
+    const version = "11";
 
     beforeEach(async () => {
         weth = await deployContract(

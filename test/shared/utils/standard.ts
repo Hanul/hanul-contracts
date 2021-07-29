@@ -10,13 +10,13 @@ const ERC721_PERMIT_TYPEHASH = convertToHash("Permit(address spender,uint256 tok
 const ERC721_PERMIT_ALL_TYPEHASH = convertToHash("Permit(address owner,address spender,uint256 nonce,uint256 deadline)");
 const ERC1155_PERMIT_TYPEHASH = convertToHash("Permit(address owner,address spender,uint256 nonce,uint256 deadline)");
 
-const domainSeparator = (name: string, tokenAddress: string) => {
+const domainSeparator = (name: string, tokenAddress: string, version: string) => {
     return ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(
         ["bytes32", "bytes32", "bytes32", "uint256", "address"],
         [
             ethers.utils.keccak256(ethers.utils.toUtf8Bytes("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")),
             ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name)),
-            ethers.utils.keccak256(ethers.utils.toUtf8Bytes("1")),
+            ethers.utils.keccak256(ethers.utils.toUtf8Bytes(version)),
             31337,
             tokenAddress,
         ]
@@ -29,7 +29,7 @@ const approvalDigest = async (token: Contract, types: string[], values: any[]) =
         [
             "0x19",
             "0x01",
-            domainSeparator(await token.name(), token.address),
+            domainSeparator(await token.name(), token.address, await token.version()),
             ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(types, values)),
         ],
     ));
