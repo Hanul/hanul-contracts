@@ -5,13 +5,13 @@ import "../../token/interfaces/IFungibleToken.sol";
 
 interface ITokenPair is IFungibleToken {
     
-    function addLiquidity(uint256 amount1, uint256 amount2) external returns (uint256 liquidity);
+    function addLiquidity(uint256 amount1, uint256 amount2) external returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2);
     function addLiquidityWithPermit(
         uint256 amount1, uint256 amount2,
         uint256 deadline,
         uint8 v1, bytes32 r1, bytes32 s1,
         uint8 v2, bytes32 r2, bytes32 s2
-    ) external returns (uint256 liquidity);
+    ) external returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2);
     
     function subtractLiquidity(uint256 liquidity) external returns (uint256 amount1, uint256 amount2);
     
