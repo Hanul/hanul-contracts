@@ -18,8 +18,11 @@ contract ETHSwaper is Swaper, IETHSwaper {
         IFungibleToken token, uint256 tokenAmount
     ) payable override public returns (uint256 liquidity, uint256 resultTokenAmount, uint256 resultETHAmount) {
         weth.deposit{value: msg.value}();
-        (liquidity, resultTokenAmount, resultETHAmount) = addLiquidity(token, tokenAmount, weth, msg.value);
-        payable(msg.sender).transfer(msg.value - resultETHAmount);
+        (liquidity, resultTokenAmount, resultETHAmount) = _addLiquidity(token, tokenAmount, weth, msg.value);
+        IFungibleToken(token).transferFrom(address(this), msg.sender, tokenAmount - resultTokenAmount);
+        uint256 remainETHAmount = msg.value - resultETHAmount;
+        weth.withdraw(remainETHAmount);
+        payable(msg.sender).transfer(remainETHAmount);
     }
 
     function addLiquidityETHWithPermit(

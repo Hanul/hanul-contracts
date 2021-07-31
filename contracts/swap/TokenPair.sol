@@ -24,7 +24,7 @@ contract TokenPair is FungibleToken, ITokenPair {
         string(abi.encodePacked("PAIR-", id)),
         "1"
     ) {
-        require(token1 != token2);
+        require(_token1 != _token2);
         swaper = ISwaper(msg.sender);
         token1 = _token1;
         token2 = _token2;
@@ -40,8 +40,8 @@ contract TokenPair is FungibleToken, ITokenPair {
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
         
-        resultAmount1 = balance1 * amount2 / balance2;
-        resultAmount2 = balance2 * amount1 / balance1;
+        resultAmount1 = balance2 == 0 ? amount1 : (balance1 * amount2 / balance2);
+        resultAmount2 = balance1 == 0 ? amount2 : (balance2 * amount1 / balance1);
 
         if (amount1 < resultAmount1) { resultAmount1 = amount1; }
         if (amount2 < resultAmount2) { resultAmount2 = amount2; }
@@ -54,7 +54,7 @@ contract TokenPair is FungibleToken, ITokenPair {
             liquidity = Math.sqrt(resultAmount1 * resultAmount2) - MINIMUM_LIQUIDITY;
             _mint(address(this), MINIMUM_LIQUIDITY);
         } else {
-            liquidity = Math.min(resultAmount1 * _totalSupply, resultAmount2 * _totalSupply);
+            liquidity = Math.sqrt(resultAmount1 * resultAmount2);
         }
         _mint(msg.sender, liquidity);
 

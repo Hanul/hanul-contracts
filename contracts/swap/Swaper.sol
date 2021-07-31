@@ -40,13 +40,13 @@ contract Swaper is ISwaper {
         return token1 < token2 ? tokenToPair[token1][token2] : tokenToPair[token2][token1];
     }
 
-    function addLiquidity(
+    function _addLiquidity(
         IFungibleToken token1, uint256 amount1,
         IFungibleToken token2, uint256 amount2
-    ) override public returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
+    ) internal returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
         
         if (token1 > token2) {
-            (liquidity, resultAmount2, resultAmount1) = addLiquidity(token2, amount2, token1, amount1);
+            (liquidity, resultAmount2, resultAmount1) = _addLiquidity(token2, amount2, token1, amount1);
         } else {
             
             token1.transferFrom(msg.sender, address(this), amount1);
@@ -56,6 +56,7 @@ contract Swaper is ISwaper {
             if (address(pair) == address(0)) {
 
                 uint256 pairId = pairs.length;
+
                 pair = new TokenPair(
                     String.convertUint256ToString(pairId),
                     token1,
@@ -71,6 +72,15 @@ contract Swaper is ISwaper {
 
             return pair.addLiquidity(amount1, amount2);
         }
+    }
+
+    function addLiquidity(
+        IFungibleToken token1, uint256 amount1,
+        IFungibleToken token2, uint256 amount2
+    ) override public returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
+        (liquidity, resultAmount1, resultAmount2) = _addLiquidity(token1, amount1, token2, amount2);
+        IFungibleToken(token1).transfer(msg.sender, amount1 - resultAmount1);
+        IFungibleToken(token2).transfer(msg.sender, amount2 - resultAmount2);
     }
     
     function addLiquidityWithPermit(
