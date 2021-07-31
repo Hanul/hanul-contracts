@@ -29,8 +29,13 @@ contract TokenPair is FungibleToken, ITokenPair {
         token1 = _token1;
         token2 = _token2;
     }
+
+    modifier onlySwaper {
+        require(msg.sender == address(swaper));
+        _;
+    }
     
-    function addLiquidity(uint256 amount1, uint256 amount2) override public returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
+    function addLiquidity(uint256 amount1, uint256 amount2) onlySwaper override public returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
         
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
@@ -52,20 +57,11 @@ contract TokenPair is FungibleToken, ITokenPair {
             liquidity = Math.min(resultAmount1 * _totalSupply, resultAmount2 * _totalSupply);
         }
         _mint(msg.sender, liquidity);
+
+        emit AddLiquidity(liquidity, resultAmount1, resultAmount2);
     }
     
-    function addLiquidityWithPermit(
-        uint256 amount1, uint256 amount2,
-        uint256 deadline,
-        uint8 v1, bytes32 r1, bytes32 s1,
-        uint8 v2, bytes32 r2, bytes32 s2
-    ) override external returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
-        token1.permit(msg.sender, address(this), amount1, deadline, v1, r1, s1);
-        token2.permit(msg.sender, address(this), amount2, deadline, v2, r2, s2);
-        return addLiquidity(amount1, amount2);
-    }
-    
-    function subtractLiquidity(uint256 liquidity) override external returns (uint256 amount1, uint256 amount2) {
+    function subtractLiquidity(uint256 liquidity) onlySwaper override external returns (uint256 amount1, uint256 amount2) {
         
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
@@ -78,9 +74,11 @@ contract TokenPair is FungibleToken, ITokenPair {
         token2.transferFrom(address(this), msg.sender, amount2);
 
         _burn(msg.sender, liquidity);
+
+        emit SubtractLiquidity(liquidity, amount1, amount2);
     }
 
-    function swap1(uint256 amountIn) override public returns (uint256 amountOut) {
+    function swap1(uint256 amountIn) onlySwaper override public returns (uint256 amountOut) {
 
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
@@ -93,18 +91,11 @@ contract TokenPair is FungibleToken, ITokenPair {
         token1.transferFrom(address(this), swaper.feeTo(), feeIn);
         token2.transferFrom(address(this), msg.sender, amountOut - feeOut);
         token2.transferFrom(address(this), swaper.feeTo(), feeOut);
-    }
-    
-    function swap1WithPermit(
-        uint256 amountIn, 
-        uint256 deadline,
-        uint8 v, bytes32 r, bytes32 s
-    ) override external returns (uint256 amountOut) {
-        token1.permit(msg.sender, address(this), amountIn, deadline, v, r, s);
-        return swap1(amountIn);
+        
+        emit Swap1(amountIn, amountOut);
     }
 
-    function swap2(uint256 amountIn) override public returns (uint256 amountOut) {
+    function swap2(uint256 amountIn) onlySwaper override public returns (uint256 amountOut) {
 
         uint256 balance2 = token2.balanceOf(address(this));
         uint256 balance1 = token1.balanceOf(address(this));
@@ -117,14 +108,7 @@ contract TokenPair is FungibleToken, ITokenPair {
         token2.transferFrom(address(this), swaper.feeTo(), feeIn);
         token1.transferFrom(address(this), msg.sender, amountOut - feeOut);
         token1.transferFrom(address(this), swaper.feeTo(), feeOut);
-    }
-    
-    function swap2WithPermit(
-        uint256 amountIn, 
-        uint256 deadline,
-        uint8 v, bytes32 r, bytes32 s
-    ) override external returns (uint256 amountOut) {
-        token2.permit(msg.sender, address(this), amountIn, deadline, v, r, s);
-        return swap2(amountIn);
+        
+        emit Swap1(amountIn, amountOut);
     }
 }

@@ -6,6 +6,8 @@ import "../../token/interfaces/IFungibleToken.sol";
 
 interface ISwaper {
 
+    event CreatePair(uint256 indexed pairId, address pairAddress, address indexed token1, address indexed token2);
+
     function feeTo() external view returns (address);
     function feeToSetter() external view returns (address);
     function calculateFee(uint256 amount) external view returns (uint256 fee);

@@ -54,14 +54,19 @@ contract Swaper is ISwaper {
 
             ITokenPair pair = tokenToPair[address(token1)][address(token2)];
             if (address(pair) == address(0)) {
+
+                uint256 pairId = pairs.length;
                 pair = new TokenPair(
-                    String.convertUint256ToString(pairs.length),
+                    String.convertUint256ToString(pairId),
                     token1,
                     token2
                 );
                 token1.approve(address(pair), type(uint256).max);
                 token2.approve(address(pair), type(uint256).max);
                 tokenToPair[address(token1)][address(token2)] = pair;
+                pairs.push(pair);
+
+                emit CreatePair(pairId, address(pair), address(token1), address(token2));
             }
 
             return pair.addLiquidity(amount1, amount2);
@@ -80,30 +85,39 @@ contract Swaper is ISwaper {
         addLiquidity(token1, amount1, token2, amount2);
     }
 
-    function subtractLiquidity(address token1, address token2, uint256 liquidity) override public returns (uint256 amount1, uint256 amount2) {
+    function _subtractLiquidity(address token1, address token2, uint256 liquidity) internal returns (uint256 amount1, uint256 amount2) {
         if (token1 > token2) {
             (amount2, amount1) = subtractLiquidity(token2, token1, liquidity);
         } else {
             (amount1, amount2) = tokenToPair[token1][token2].subtractLiquidity(liquidity);
         }
+    }
+
+    function subtractLiquidity(address token1, address token2, uint256 liquidity) override public returns (uint256 amount1, uint256 amount2) {
+        (amount1, amount2) = _subtractLiquidity(token1, token2, liquidity);
         IFungibleToken(token1).transferFrom(address(this), msg.sender, amount1);
         IFungibleToken(token2).transferFrom(address(this), msg.sender, amount2);
     }
 
-    function swap(address[] memory path, uint256 amountIn) override public returns (uint256 amountOut) {
-        address token1;
-        address token2;
-        for (uint256 i = 0; i < path.length - 1; i += 1) {
-            token1 = path[i];
-            token2 = path[i + 1];
-            if (token1 > token2) {
-                amountIn = tokenToPair[token2][token1].swap2(amountIn);
-            } else {
-                amountIn = tokenToPair[token1][token2].swap1(amountIn);
-            }
+    function swapOnce(address token1, address token2, uint256 amountIn) internal returns (uint256 amountOut) {
+        if (token1 > token2) {
+            amountOut = tokenToPair[token2][token1].swap2(amountIn);
+        } else {
+            amountOut = tokenToPair[token1][token2].swap1(amountIn);
         }
-        IFungibleToken(token2).transferFrom(address(this), msg.sender, amountIn);
+    }
+
+    function _swap(address[] memory path, uint256 amountIn) internal returns (uint256 amountOut) {
+        uint256 to = path.length - 1;
+        for (uint256 i = 0; i < to; i += 1) {
+            amountIn = swapOnce(path[i], path[i + 1], amountIn);
+        }
         return amountIn;
+    }
+
+    function swap(address[] memory path, uint256 amountIn) override public returns (uint256 amountOut) {
+        amountOut = _swap(path, amountIn);
+        IFungibleToken(path[path.length - 1]).transferFrom(address(this), msg.sender, amountOut);
     }
     
     function swapWithPermit(address[] memory path, uint256 amountIn,

@@ -9,17 +9,20 @@ interface IETHSwaper is ISwaper {
     function weth() external view returns (IWETH);
     
     function addLiquidityETH(
-        address ethAmount,
-        address token, uint256 tokenAmount
-    ) external returns (uint256 resultTokenAmount, address resultETHAmount);
+        IFungibleToken token, uint256 tokenAmount
+    ) payable external returns (uint256 liquidity, uint256 resultTokenAmount, uint256 resultETHAmount);
 
     function addLiquidityETHWithPermit(
-        address ethAmount,
-        address token, uint256 tokenAmount,
+        IFungibleToken token, uint256 tokenAmount,
         uint256 deadline,
-        uint8 v1, bytes32 r1, bytes32 s1,
-        uint8 v2, bytes32 r2, bytes32 s2
-    ) external returns (uint256 resultTokenAmount, address resultETHAmount);
+        uint8 v, bytes32 r, bytes32 s
+    ) payable external returns (uint256 liquidity, uint256 resultTokenAmount, uint256 resultETHAmount);
 
-    function swapETH(address[] memory path) payable external returns (uint256 amountOut);
+    function subtractLiquidityETH(address token, uint256 liquidity) external returns (uint256 tokenAmount, uint256 ethAmount);
+
+    function swapFromETH(address[] memory path) payable external returns (uint256 amountOut);
+    function swapToETH(address[] memory path, uint256 amountIn) external returns (uint256 ethAmountOut);
+    function swapToETHWithPermit(address[] memory path, uint256 amountIn,
+        uint256 deadline, uint8 v, bytes32 r, bytes32 s
+    ) external returns (uint256 ethAmountOut);
 }

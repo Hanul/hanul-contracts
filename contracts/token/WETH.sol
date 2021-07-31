@@ -15,7 +15,7 @@ contract WETH is FungibleToken("Wrapped Ether", "WETH", "11"), IWETH {
         emit Deposit(msg.sender, msg.value);
     }
 
-    function withdraw(uint value) override external {
+    function withdraw(uint256 value) override external {
         _burn(msg.sender, value);
         payable(msg.sender).transfer(value);
         emit Withdraw(msg.sender, value);
