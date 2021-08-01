@@ -15,6 +15,7 @@ contract Swaper is ISwaper {
     ITokenPair[] override public pairs;
 
     constructor() {
+        feeTo = msg.sender;
         feeToSetter = msg.sender;
     }
 
@@ -126,6 +127,7 @@ contract Swaper is ISwaper {
     }
 
     function swap(address[] memory path, uint256 amountIn) override public returns (uint256 amountOut) {
+        IFungibleToken(path[0]).transferFrom(msg.sender, address(this), amountIn);
         amountOut = _swap(path, amountIn);
         IFungibleToken(path[path.length - 1]).transfer(msg.sender, amountOut);
     }

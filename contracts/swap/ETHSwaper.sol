@@ -44,10 +44,12 @@ contract ETHSwaper is Swaper, IETHSwaper {
     function swapFromETH(address[] memory path) payable override external returns (uint256 amountOut) {
         weth.deposit{value: msg.value}();
         uint256 amountIn = swapOnce(address(weth), path[0], msg.value);
-        return swap(path, amountIn);
+        amountOut = _swap(path, amountIn);
+        IFungibleToken(path[path.length - 1]).transfer(msg.sender, amountOut);
     }
 
     function swapToETH(address[] memory path, uint256 amountIn) override public returns (uint256 ethAmountOut) {
+        IFungibleToken(path[0]).transferFrom(msg.sender, address(this), amountIn);
         ethAmountOut = _swap(path, amountIn);
         weth.withdraw(ethAmountOut);
         payable(msg.sender).transfer(ethAmountOut);

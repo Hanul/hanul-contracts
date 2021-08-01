@@ -86,10 +86,11 @@ contract TokenPair is FungibleToken, ITokenPair {
         amountOut = balance2 * amountIn / balance1;
         uint256 feeIn = swaper.calculateFee(amountIn);
         uint256 feeOut = swaper.calculateFee(amountOut);
+        amountOut -= feeOut;
 
         token1.transferFrom(msg.sender, address(this), amountIn);
         token1.transfer(swaper.feeTo(), feeIn);
-        token2.transfer(msg.sender, amountOut - feeOut);
+        token2.transfer(msg.sender, amountOut);
         token2.transfer(swaper.feeTo(), feeOut);
         
         emit Swap1(who, amountIn, amountOut);
@@ -103,10 +104,11 @@ contract TokenPair is FungibleToken, ITokenPair {
         amountOut = balance1 * amountIn / balance2;
         uint256 feeIn = swaper.calculateFee(amountIn);
         uint256 feeOut = swaper.calculateFee(amountOut);
+        amountOut -= feeOut;
 
         token2.transferFrom(msg.sender, address(this), amountIn);
         token2.transfer(swaper.feeTo(), feeIn);
-        token1.transfer(msg.sender, amountOut - feeOut);
+        token1.transfer(msg.sender, amountOut);
         token1.transfer(swaper.feeTo(), feeOut);
         
         emit Swap1(who, amountIn, amountOut);
