@@ -5,7 +5,7 @@ import "../token/FungibleToken.sol";
 import "../token/interfaces/IFungibleToken.sol";
 import "./interfaces/ITokenPair.sol";
 import "./interfaces/ISwaper.sol";
-import '../libraries/Math.sol';
+import "../libraries/Math.sol";
 
 contract TokenPair is FungibleToken, ITokenPair {
 
@@ -35,7 +35,7 @@ contract TokenPair is FungibleToken, ITokenPair {
         _;
     }
     
-    function addLiquidity(uint256 amount1, uint256 amount2) onlySwaper override public returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
+    function addLiquidity(address to, uint256 amount1, uint256 amount2) onlySwaper override public returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2) {
         
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
@@ -56,12 +56,12 @@ contract TokenPair is FungibleToken, ITokenPair {
         } else {
             liquidity = Math.sqrt(resultAmount1 * resultAmount2);
         }
-        _mint(msg.sender, liquidity);
+        _mint(to, liquidity);
 
-        emit AddLiquidity(liquidity, resultAmount1, resultAmount2);
+        emit AddLiquidity(to, liquidity, resultAmount1, resultAmount2);
     }
     
-    function subtractLiquidity(uint256 liquidity) onlySwaper override external returns (uint256 amount1, uint256 amount2) {
+    function subtractLiquidity(address from, uint256 liquidity) onlySwaper override external returns (uint256 amount1, uint256 amount2) {
         
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
@@ -69,16 +69,16 @@ contract TokenPair is FungibleToken, ITokenPair {
         uint256 _totalSupply = totalSupply();
         amount1 = balance1 * liquidity / _totalSupply;
         amount2 = balance2 * liquidity / _totalSupply;
-        
-        token1.transferFrom(address(this), msg.sender, amount1);
-        token2.transferFrom(address(this), msg.sender, amount2);
 
-        _burn(msg.sender, liquidity);
+        token1.transfer(msg.sender, amount1);
+        token2.transfer(msg.sender, amount2);
 
-        emit SubtractLiquidity(liquidity, amount1, amount2);
+        _burn(from, liquidity);
+
+        emit SubtractLiquidity(from, liquidity, amount1, amount2);
     }
 
-    function swap1(uint256 amountIn) onlySwaper override public returns (uint256 amountOut) {
+    function swap1(address who, uint256 amountIn) onlySwaper override public returns (uint256 amountOut) {
 
         uint256 balance1 = token1.balanceOf(address(this));
         uint256 balance2 = token2.balanceOf(address(this));
@@ -88,14 +88,14 @@ contract TokenPair is FungibleToken, ITokenPair {
         uint256 feeOut = swaper.calculateFee(amountOut);
 
         token1.transferFrom(msg.sender, address(this), amountIn);
-        token1.transferFrom(address(this), swaper.feeTo(), feeIn);
-        token2.transferFrom(address(this), msg.sender, amountOut - feeOut);
-        token2.transferFrom(address(this), swaper.feeTo(), feeOut);
+        token1.transfer(swaper.feeTo(), feeIn);
+        token2.transfer(msg.sender, amountOut - feeOut);
+        token2.transfer(swaper.feeTo(), feeOut);
         
-        emit Swap1(amountIn, amountOut);
+        emit Swap1(who, amountIn, amountOut);
     }
 
-    function swap2(uint256 amountIn) onlySwaper override public returns (uint256 amountOut) {
+    function swap2(address who, uint256 amountIn) onlySwaper override public returns (uint256 amountOut) {
 
         uint256 balance2 = token2.balanceOf(address(this));
         uint256 balance1 = token1.balanceOf(address(this));
@@ -105,10 +105,10 @@ contract TokenPair is FungibleToken, ITokenPair {
         uint256 feeOut = swaper.calculateFee(amountOut);
 
         token2.transferFrom(msg.sender, address(this), amountIn);
-        token2.transferFrom(address(this), swaper.feeTo(), feeIn);
-        token1.transferFrom(address(this), msg.sender, amountOut - feeOut);
-        token1.transferFrom(address(this), swaper.feeTo(), feeOut);
+        token2.transfer(swaper.feeTo(), feeIn);
+        token1.transfer(msg.sender, amountOut - feeOut);
+        token1.transfer(swaper.feeTo(), feeOut);
         
-        emit Swap1(amountIn, amountOut);
+        emit Swap1(who, amountIn, amountOut);
     }
 }
