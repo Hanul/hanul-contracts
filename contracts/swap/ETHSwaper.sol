@@ -2,40 +2,55 @@
 pragma solidity ^0.8.5;
 
 import "./interfaces/IETHSwaper.sol";
-import "./Swaper.sol";
+import "./interfaces/ISwaper.sol";
 import "../token/interfaces/IWETH.sol";
 import "../token/WETH.sol";
 
-contract ETHSwaper is Swaper, IETHSwaper {
+contract ETHSwaper is IETHSwaper {
 
+    ISwaper override public swaper;
     IWETH override public weth;
 
-    constructor() {
+    mapping(address => bool) private approved;
+
+    constructor(ISwaper _swaper) {
+        swaper = _swaper;
         weth = new WETH();
+        weth.approve(address(swaper), type(uint256).max);
     }
 
-    function addLiquidityETH(
-        IFungibleToken token, uint256 tokenAmount
+    receive() external payable {}
+
+    function addLiquidity(
+        address to, IFungibleToken token, uint256 tokenAmount
     ) payable override public returns (uint256 liquidity, uint256 resultTokenAmount, uint256 resultETHAmount) {
+        
+        token.transferFrom(msg.sender, address(this), tokenAmount);
+        if (approved[address(token)] != true) {
+            token.approve(address(swaper), type(uint256).max);
+            approved[address(token)] = true;
+        }
         weth.deposit{value: msg.value}();
-        (liquidity, resultTokenAmount, resultETHAmount) = _addLiquidity(token, tokenAmount, weth, msg.value);
+        
+        (liquidity, resultTokenAmount, resultETHAmount) = swaper.addLiquidity(to, token, tokenAmount, weth, msg.value);
+        
         IFungibleToken(token).transfer(msg.sender, tokenAmount - resultTokenAmount);
         uint256 remainETHAmount = msg.value - resultETHAmount;
         weth.withdraw(remainETHAmount);
         payable(msg.sender).transfer(remainETHAmount);
     }
 
-    function addLiquidityETHWithPermit(
-        IFungibleToken token, uint256 tokenAmount,
+    function addLiquidityWithPermit(
+        address to, IFungibleToken token, uint256 tokenAmount,
         uint256 deadline,
         uint8 v, bytes32 r, bytes32 s
     ) payable override external returns (uint256 liquidity, uint256 resultTokenAmount, uint256 resultETHAmount) {
         token.permit(msg.sender, address(this), tokenAmount, deadline, v, r, s);
-        return addLiquidityETH(token, tokenAmount);
+        return addLiquidity(to, token, tokenAmount);
     }
 
-    function subtractLiquidityETH(address token, uint256 liquidity) override external returns (uint256 tokenAmount, uint256 ethAmount) {
-        (tokenAmount, ethAmount) = _subtractLiquidity(token, address(weth), liquidity);
+    function subtractLiquidity(address from, address token, uint256 liquidity) override external returns (uint256 tokenAmount, uint256 ethAmount) {
+        (tokenAmount, ethAmount) = swaper.subtractLiquidity(from, token, address(weth), liquidity);
         IFungibleToken(token).transfer(msg.sender, tokenAmount);
         weth.withdraw(ethAmount);
         payable(msg.sender).transfer(ethAmount);
@@ -43,14 +58,27 @@ contract ETHSwaper is Swaper, IETHSwaper {
 
     function swapFromETH(address[] memory path) payable override external returns (uint256 amountOut) {
         weth.deposit{value: msg.value}();
-        uint256 amountIn = swapOnce(address(weth), path[0], msg.value);
-        amountOut = _swap(path, amountIn);
-        IFungibleToken(path[path.length - 1]).transfer(msg.sender, amountOut);
+        address[] memory _path = new address[](2);
+        _path[0] = address(weth);
+        _path[1] = path[0];
+        uint256 amountIn = swaper.swap(_path, msg.value);
+        if (path.length == 1) {
+            IFungibleToken(path[0]).transfer(msg.sender, amountIn);
+        } else {
+            amountOut = swaper.swap(path, amountIn);
+            IFungibleToken(path[path.length - 1]).transfer(msg.sender, amountOut);
+        }
     }
 
     function swapToETH(address[] memory path, uint256 amountIn) override public returns (uint256 ethAmountOut) {
         IFungibleToken(path[0]).transferFrom(msg.sender, address(this), amountIn);
-        ethAmountOut = _swap(path, amountIn);
+        if (path.length > 1) {
+            amountIn = swaper.swap(path, amountIn);
+        }
+        address[] memory _path = new address[](2);
+        _path[0] = path[0];
+        _path[1] = address(weth);
+        uint256 ethAmountOut = swaper.swap(_path, amountIn);
         weth.withdraw(ethAmountOut);
         payable(msg.sender).transfer(ethAmountOut);
     }

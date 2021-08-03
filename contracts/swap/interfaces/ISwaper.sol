@@ -17,11 +17,13 @@ interface ISwaper {
     function getPair(address token1, address token2) external view returns (ITokenPair pair);
 
     function addLiquidity(
+        address to,
         IFungibleToken token1, uint256 amount1,
         IFungibleToken token2, uint256 amount2
     ) external returns (uint256 liquidity, uint256 resultAmount1, uint256 resultAmount2);
 
     function addLiquidityWithPermit(
+        address to,
         IFungibleToken token1, uint256 amount1,
         IFungibleToken token2, uint256 amount2,
         uint256 deadline,
@@ -29,7 +31,7 @@ interface ISwaper {
         uint8 v2, bytes32 r2, bytes32 s2
     ) external;
 
-    function subtractLiquidity(address token1, address token2, uint256 liquidity) external returns (uint256 amount1, uint256 amount2);
+    function subtractLiquidity(address from, address token1, address token2, uint256 liquidity) external returns (uint256 amount1, uint256 amount2);
 
     function swap(address[] memory path, uint256 amountIn) external returns (uint256 amountOut);
     function swapWithPermit(address[] memory path, uint256 amountIn,

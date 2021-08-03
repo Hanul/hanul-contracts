@@ -48,7 +48,7 @@ describe("Swaper", () => {
             await coin1.approve(swaper.address, amount1);
             await coin2.approve(swaper.address, amount2);
 
-            await expect(swaper.addLiquidity(coin1.address, amount1, coin2.address, amount2))
+            await expect(swaper.addLiquidity(admin.address, coin1.address, amount1, coin2.address, amount2))
                 .to.emit(swaper, "CreatePair")
 
             const pairAddress = await swaper.getPair(coin1.address, coin2.address);
@@ -65,7 +65,7 @@ describe("Swaper", () => {
             await coin1.approve(swaper.address, amount3);
             await coin2.approve(swaper.address, amount4);
 
-            await expect(swaper.addLiquidity(coin1.address, amount3, coin2.address, amount4))
+            await expect(swaper.addLiquidity(admin.address, coin1.address, amount3, coin2.address, amount4))
                 .to.emit(pair, "AddLiquidity")
                 .withArgs(
                     admin.address,
@@ -83,9 +83,6 @@ describe("Swaper", () => {
         it("add liquidity with permit", async () => {
             const amount1 = expandTo18Decimals(120)
             const amount2 = expandTo18Decimals(100)
-
-            await coin1.approve(swaper.address, amount1);
-            await coin2.approve(swaper.address, amount2);
 
             const deadline = constants.MaxUint256
 
@@ -109,6 +106,7 @@ describe("Swaper", () => {
             const { v: v2, r: r2, s: s2 } = ecsign(Buffer.from(digest2.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
 
             await expect(swaper.addLiquidityWithPermit(
+                admin.address, 
                 coin1.address, amount1, coin2.address, amount2,
                 deadline,
                 v1, r1, s1,
@@ -147,6 +145,7 @@ describe("Swaper", () => {
             const { v: v4, r: r4, s: s4 } = ecsign(Buffer.from(digest4.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
 
             await expect(swaper.addLiquidityWithPermit(
+                admin.address, 
                 coin1.address, amount3, coin2.address, amount4,
                 deadline,
                 v3, r3, s3,
@@ -173,13 +172,13 @@ describe("Swaper", () => {
             await coin1.approve(swaper.address, amount1);
             await coin2.approve(swaper.address, amount2);
 
-            await swaper.addLiquidity(coin1.address, amount1, coin2.address, amount2)
+            await swaper.addLiquidity(admin.address, coin1.address, amount1, coin2.address, amount2)
 
             const pairAddress = await swaper.getPair(coin1.address, coin2.address);
             const pair = new Contract(pairAddress, TokenPairArtifact.abi, provider) as TokenPair;
 
             const liquidity = expandTo18Decimals(10)
-            await expect(swaper.subtractLiquidity(coin1.address, coin2.address, liquidity))
+            await expect(swaper.subtractLiquidity(admin.address, coin1.address, coin2.address, liquidity))
                 .to.emit(pair, "SubtractLiquidity")
 
             expect(await pair.balanceOf(admin.address)).to.eq(BigNumber.from("99544511501033221691"));
@@ -192,7 +191,7 @@ describe("Swaper", () => {
             await coin1.approve(swaper.address, amount1);
             await coin2.approve(swaper.address, amount2);
 
-            await swaper.addLiquidity(coin1.address, amount1, coin2.address, amount2)
+            await swaper.addLiquidity(admin.address, coin1.address, amount1, coin2.address, amount2)
 
             const pairAddress = await swaper.getPair(coin1.address, coin2.address);
             const pair = new Contract(pairAddress, TokenPairArtifact.abi, provider) as TokenPair;
@@ -210,7 +209,7 @@ describe("Swaper", () => {
             await coin1.approve(swaper.address, amount1);
             await coin2.approve(swaper.address, amount2);
 
-            await swaper.addLiquidity(coin1.address, amount1, coin2.address, amount2)
+            await swaper.addLiquidity(admin.address, coin1.address, amount1, coin2.address, amount2)
 
             const pairAddress = await swaper.getPair(coin1.address, coin2.address);
             const pair = new Contract(pairAddress, TokenPairArtifact.abi, provider) as TokenPair;
