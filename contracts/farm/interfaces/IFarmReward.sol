@@ -3,5 +3,6 @@ pragma solidity ^0.8.5;
 
 import "../../token/interfaces/IFungibleToken.sol";
 
-interface IFarmToken is IFungibleToken {
+interface IFarmReward is IFungibleToken {
+    function mint(address to, uint256 amount) external;
 }

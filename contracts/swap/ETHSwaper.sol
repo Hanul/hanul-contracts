@@ -78,7 +78,7 @@ contract ETHSwaper is IETHSwaper {
         address[] memory _path = new address[](2);
         _path[0] = path[0];
         _path[1] = address(weth);
-        uint256 ethAmountOut = swaper.swap(_path, amountIn);
+        ethAmountOut = swaper.swap(_path, amountIn);
         weth.withdraw(ethAmountOut);
         payable(msg.sender).transfer(ethAmountOut);
     }
