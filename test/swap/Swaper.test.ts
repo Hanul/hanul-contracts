@@ -15,8 +15,10 @@ import { getERC20ApprovalDigest } from "../shared/utils/standard";
 const { deployContract } = waffle;
 
 describe("Swaper", () => {
+
     let coin1: HanulCoin;
     let coin2: HanulCoin;
+    let coin3: HanulCoin;
     let swaper: Swaper;
 
     const provider = waffle.provider;
@@ -29,6 +31,11 @@ describe("Swaper", () => {
             []
         ) as HanulCoin;
         coin2 = await deployContract(
+            admin,
+            HanulCoinArtifact,
+            []
+        ) as HanulCoin;
+        coin3 = await deployContract(
             admin,
             HanulCoinArtifact,
             []
@@ -106,7 +113,7 @@ describe("Swaper", () => {
             const { v: v2, r: r2, s: s2 } = ecsign(Buffer.from(digest2.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
 
             await expect(swaper.addLiquidityWithPermit(
-                admin.address, 
+                admin.address,
                 coin1.address, amount1, coin2.address, amount2,
                 deadline,
                 v1, r1, s1,
@@ -145,7 +152,7 @@ describe("Swaper", () => {
             const { v: v4, r: r4, s: s4 } = ecsign(Buffer.from(digest4.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
 
             await expect(swaper.addLiquidityWithPermit(
-                admin.address, 
+                admin.address,
                 coin1.address, amount3, coin2.address, amount4,
                 deadline,
                 v3, r3, s3,
@@ -155,8 +162,8 @@ describe("Swaper", () => {
                 .withArgs(
                     admin.address,
                     BigNumber.from("118673220792785990248").sub(BigNumber.from("109544511501033221691")),
-                    amount2.mul(amount3).div(amount1),
-                    amount3
+                    amount3,
+                    amount2.mul(amount3).div(amount1)
                 )
 
             expect(await pair.balanceOf(admin.address)).to.eq(BigNumber.from("118673220792785990248"));
@@ -198,7 +205,7 @@ describe("Swaper", () => {
 
             const swapAmount = expandTo18Decimals(20)
             await coin1.approve(swaper.address, swapAmount);
-            await expect(swaper.swap([coin1.address, coin2.address], swapAmount))
+            await expect(swaper.swap([coin1.address, coin2.address], swapAmount, 0))
                 .to.emit(pair, "Swap1")
         })
 
@@ -228,10 +235,40 @@ describe("Swaper", () => {
             const { v, r, s } = ecsign(Buffer.from(digest.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
 
             await expect(swaper.swapWithPermit(
-                [coin1.address, coin2.address], swapAmount,
+                [coin1.address, coin2.address], swapAmount, 0,
                 deadline, v, r, s
             ))
                 .to.emit(pair, "Swap1")
+        })
+
+        it("swap 2 level", async () => {
+            const amount1 = expandTo18Decimals(120)
+            const amount2 = expandTo18Decimals(50)
+            const amount3 = expandTo18Decimals(50)
+            const amount4 = expandTo18Decimals(80)
+
+            await coin1.approve(swaper.address, amount1);
+            await coin2.approve(swaper.address, amount2.add(amount3));
+            await coin3.approve(swaper.address, amount4);
+
+            await swaper.addLiquidity(admin.address, coin1.address, amount1, coin2.address, amount2)
+            await swaper.addLiquidity(admin.address, coin2.address, amount3, coin3.address, amount4)
+
+            const pair1Address = await swaper.getPair(coin1.address, coin2.address);
+            const pair1 = new Contract(pair1Address, TokenPairArtifact.abi, provider) as TokenPair;
+
+            const pair2Address = await swaper.getPair(coin2.address, coin3.address);
+            const pair2 = new Contract(pair2Address, TokenPairArtifact.abi, provider) as TokenPair;
+
+            console.log((await coin3.balanceOf(admin.address)).toString());
+
+            const swapAmount = expandTo18Decimals(20)
+            await coin1.approve(swaper.address, swapAmount);
+            await expect(swaper.swap([coin1.address, coin2.address, coin3.address], swapAmount, 0))
+                .to.emit(pair1, "Swap1")
+                .to.emit(pair2, "Swap1")
+
+            console.log((await coin3.balanceOf(admin.address)).toString());
         })
     })
 })

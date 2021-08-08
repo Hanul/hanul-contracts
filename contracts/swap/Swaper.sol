@@ -102,7 +102,7 @@ contract Swaper is ISwaper {
         }
     }
 
-    function swap(address[] memory path, uint256 amountIn) override public returns (uint256 amountOut) {
+    function swap(address[] memory path, uint256 amountIn, uint256 amountOutMin) override public returns (uint256 amountOut) {
         require(path.length > 1);
 
         IFungibleToken(path[0]).transferFrom(msg.sender, address(this), amountIn);
@@ -120,14 +120,15 @@ contract Swaper is ISwaper {
             }
         }
         
+        require(amountIn >= amountOutMin);
         IFungibleToken(token2).transfer(msg.sender, amountIn);
         return amountIn;
     }
     
-    function swapWithPermit(address[] memory path, uint256 amountIn,
+    function swapWithPermit(address[] memory path, uint256 amountIn, uint256 amountOutMin,
         uint256 deadline, uint8 v, bytes32 r, bytes32 s
     ) override external returns (uint256 amountOut) {
         IFungibleToken(path[0]).permit(msg.sender, address(this), amountIn, deadline, v, r, s);
-        return swap(path, amountIn);
+        return swap(path, amountIn, amountOutMin);
     }
 }

@@ -56,37 +56,38 @@ contract ETHSwaper is IETHSwaper {
         payable(msg.sender).transfer(ethAmount);
     }
 
-    function swapFromETH(address[] memory path) payable override external returns (uint256 amountOut) {
+    function swapFromETH(address[] memory path, uint256 amountOutMin) payable override external returns (uint256 amountOut) {
         weth.deposit{value: msg.value}();
         address[] memory _path = new address[](2);
         _path[0] = address(weth);
         _path[1] = path[0];
-        uint256 amountIn = swaper.swap(_path, msg.value);
+        uint256 amountIn = swaper.swap(_path, msg.value, 0);
         if (path.length == 1) {
+            require(amountIn >= amountOutMin);
             IFungibleToken(path[0]).transfer(msg.sender, amountIn);
         } else {
-            amountOut = swaper.swap(path, amountIn);
+            amountOut = swaper.swap(path, amountIn, amountOutMin);
             IFungibleToken(path[path.length - 1]).transfer(msg.sender, amountOut);
         }
     }
 
-    function swapToETH(address[] memory path, uint256 amountIn) override public returns (uint256 ethAmountOut) {
+    function swapToETH(address[] memory path, uint256 amountIn, uint256 ethAmountOutMin) override public returns (uint256 ethAmountOut) {
         IFungibleToken(path[0]).transferFrom(msg.sender, address(this), amountIn);
         if (path.length > 1) {
-            amountIn = swaper.swap(path, amountIn);
+            amountIn = swaper.swap(path, amountIn, 0);
         }
         address[] memory _path = new address[](2);
-        _path[0] = path[0];
+        _path[0] = path[path.length - 1];
         _path[1] = address(weth);
-        ethAmountOut = swaper.swap(_path, amountIn);
+        ethAmountOut = swaper.swap(_path, amountIn, ethAmountOutMin);
         weth.withdraw(ethAmountOut);
         payable(msg.sender).transfer(ethAmountOut);
     }
     
-    function swapToETHWithPermit(address[] memory path, uint256 amountIn,
+    function swapToETHWithPermit(address[] memory path, uint256 amountIn, uint256 ethAmountOutMin,
         uint256 deadline, uint8 v, bytes32 r, bytes32 s
     ) override external returns (uint256 ethAmountOut) {
         IFungibleToken(path[0]).permit(msg.sender, address(this), amountIn, deadline, v, r, s);
-        return swapToETH(path, amountIn);
+        return swapToETH(path, amountIn, ethAmountOutMin);
     }
 }

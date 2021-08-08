@@ -21,9 +21,9 @@ interface IETHSwaper {
 
     function subtractLiquidity(address from, address token, uint256 liquidity) external returns (uint256 tokenAmount, uint256 ethAmount);
 
-    function swapFromETH(address[] memory path) payable external returns (uint256 amountOut);
-    function swapToETH(address[] memory path, uint256 amountIn) external returns (uint256 ethAmountOut);
-    function swapToETHWithPermit(address[] memory path, uint256 amountIn,
+    function swapFromETH(address[] memory path, uint256 amountOutMin) payable external returns (uint256 amountOut);
+    function swapToETH(address[] memory path, uint256 amountIn, uint256 ethAmountOutMin) external returns (uint256 ethAmountOut);
+    function swapToETHWithPermit(address[] memory path, uint256 amountIn, uint256 ethAmountOutMin,
         uint256 deadline, uint8 v, bytes32 r, bytes32 s
     ) external returns (uint256 ethAmountOut);
 }

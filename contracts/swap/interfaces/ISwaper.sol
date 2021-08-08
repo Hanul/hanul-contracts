@@ -33,8 +33,8 @@ interface ISwaper {
 
     function subtractLiquidity(address from, address token1, address token2, uint256 liquidity) external returns (uint256 amount1, uint256 amount2);
 
-    function swap(address[] memory path, uint256 amountIn) external returns (uint256 amountOut);
-    function swapWithPermit(address[] memory path, uint256 amountIn,
+    function swap(address[] memory path, uint256 amountIn, uint256 amountOutMin) external returns (uint256 amountOut);
+    function swapWithPermit(address[] memory path, uint256 amountIn, uint256 amountOutMin,
         uint256 deadline, uint8 v, bytes32 r, bytes32 s
     ) external returns (uint256 amountOut);
 }
