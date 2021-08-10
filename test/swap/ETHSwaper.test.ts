@@ -186,7 +186,7 @@ describe("ETHSwaper", () => {
 
             const swapAmount = expandTo18Decimals(20)
             await coin1.approve(ethSwaper.address, swapAmount);
-            await expect(ethSwaper.swapToETH([coin1.address], 0, swapAmount))
+            await expect(ethSwaper.swapToETH([coin1.address], swapAmount, 0))
                 .to.emit(pair, "Swap1")
         })
 
