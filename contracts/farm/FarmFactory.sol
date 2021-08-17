@@ -3,14 +3,13 @@ pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IFarmFactory.sol";
-import "./interfaces/IFarmReward.sol";
 import "./FarmReward.sol";
 
 contract FarmFactory is Ownable, IFarmFactory {
     uint256 private constant PRECISION = 1e20;
     
     struct PoolInfo {
-        ITokenPair pair;
+        IFungibleToken token;
         uint256 allocPoint;
         uint256 lastRewardBlock;
         uint256 accRewardPerShare;
@@ -49,15 +48,15 @@ contract FarmFactory is Ownable, IFarmFactory {
         if (block.number <= _lastRewardBlock) {
             return;
         }
-        uint256 pairSupply = pool.pair.balanceOf(address(this));
-        if (pairSupply == 0 || pool.allocPoint == 0) {
+        uint256 tokenSupply = pool.token.balanceOf(address(this));
+        if (tokenSupply == 0 || pool.allocPoint == 0) {
             pool.lastRewardBlock = block.number;
             return;
         }
         uint256 reward = (block.number - _lastRewardBlock) * rewardPerBlock * pool.allocPoint / totalAllocPoint;
         farmReward.mint(owner(), reward / 10);
         farmReward.mint(address(this), reward);
-        pool.accRewardPerShare = pool.accRewardPerShare + reward * PRECISION / pairSupply;
+        pool.accRewardPerShare = pool.accRewardPerShare + reward * PRECISION / tokenSupply;
         pool.lastRewardBlock = block.number;
     }
 
@@ -68,16 +67,16 @@ contract FarmFactory is Ownable, IFarmFactory {
         }
     }
 
-    function add(ITokenPair pair, uint256 allocPoint) external onlyOwner {
+    function add(IFungibleToken token, uint256 allocPoint) external onlyOwner {
         massUpdatePools();
         totalAllocPoint += allocPoint;
         poolInfo.push(PoolInfo({
-            pair: pair,
+            token: token,
             allocPoint: allocPoint,
             lastRewardBlock: block.number > startBlock ? block.number : startBlock,
             accRewardPerShare: 0
         }));
-        emit Add(pair, allocPoint);
+        emit Add(token, allocPoint);
     }
 
     function set(uint256 pid, uint256 allocPoint) external onlyOwner {
@@ -109,7 +108,7 @@ contract FarmFactory is Ownable, IFarmFactory {
             }
         }
         if (amount > 0) {
-            pool.pair.transferFrom(msg.sender, address(this), amount);
+            pool.token.transferFrom(msg.sender, address(this), amount);
             _amount += amount;
             user.amount = _amount;
         }
@@ -125,7 +124,7 @@ contract FarmFactory is Ownable, IFarmFactory {
         bytes32 r,
         bytes32 s
     ) external override {
-        poolInfo[pid].pair.permit(msg.sender, address(this), amount, deadline, v, r, s);
+        poolInfo[pid].token.permit(msg.sender, address(this), amount, deadline, v, r, s);
         deposit(pid, amount);
     }
 
@@ -137,7 +136,7 @@ contract FarmFactory is Ownable, IFarmFactory {
         bytes32 r,
         bytes32 s
     ) external override {
-        poolInfo[pid].pair.permit(msg.sender, address(this), type(uint256).max, deadline, v, r, s);
+        poolInfo[pid].token.permit(msg.sender, address(this), type(uint256).max, deadline, v, r, s);
         deposit(pid, amount);
     }
 
@@ -154,7 +153,7 @@ contract FarmFactory is Ownable, IFarmFactory {
         if (amount > 0) {
             _amount -= amount;
             user.amount = _amount;
-            pool.pair.transfer(msg.sender, amount);
+            pool.token.transfer(msg.sender, amount);
         }
         user.rewardDebt = _amount * _accRewardPerShare / PRECISION;
         emit Withdraw(msg.sender, pid, amount);

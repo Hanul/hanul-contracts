@@ -2,11 +2,11 @@
 pragma solidity ^0.8.5;
 
 import "./IFarmReward.sol";
-import "../../swap/interfaces/ITokenPair.sol";
+import "../../token/interfaces/IFungibleToken.sol";
 
 interface IFarmFactory {
 
-    event Add(ITokenPair indexed pair, uint256 allocPoint);
+    event Add(IFungibleToken indexed token, uint256 allocPoint);
     event Set(uint256 indexed pid, uint256 allocPoint);
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -17,7 +17,7 @@ interface IFarmFactory {
 
     function poolCount() external view returns (uint256);
     function poolInfo(uint256 pid) external view returns (
-        ITokenPair pair,
+        IFungibleToken token,
         uint256 allocPoint,
         uint256 lastRewardBlock,
         uint256 accRewardPerShare
