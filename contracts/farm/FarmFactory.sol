@@ -43,6 +43,22 @@ contract FarmFactory is Ownable, IFarmFactory {
         return poolInfo.length;
     }
 
+    function pendingReward(uint256 pid, address _user) external view override returns (uint256) {
+        PoolInfo memory pool = poolInfo[pid];
+        UserInfo memory user = userInfo[pid][_user];
+        
+        uint256 _accRewardPerShare = pool.accRewardPerShare;
+        uint256 _lastRewardBlock = pool.lastRewardBlock;
+        if (block.number > _lastRewardBlock) {
+            uint256 tokenSupply = pool.token.balanceOf(address(this));
+            if (tokenSupply != 0 && pool.allocPoint != 0) {
+                uint256 reward = (block.number - _lastRewardBlock) * rewardPerBlock * pool.allocPoint / totalAllocPoint;
+                _accRewardPerShare = _accRewardPerShare + reward * PRECISION / tokenSupply;
+            }
+        }
+        return user.amount * _accRewardPerShare / PRECISION - user.rewardDebt;
+    }
+
     function updatePool(PoolInfo storage pool) internal {
         uint256 _lastRewardBlock = pool.lastRewardBlock;
         if (block.number <= _lastRewardBlock) {

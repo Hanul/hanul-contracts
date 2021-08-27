@@ -36,6 +36,15 @@ contract Emitter is Ownable, IEmitter {
         return poolInfo.length;
     }
 
+    function pendingToken(uint256 pid) external view override returns (uint256) {
+        PoolInfo memory pool = poolInfo[pid];
+        uint256 _lastEmitBlock = pool.lastEmitBlock;
+        if (block.number > _lastEmitBlock && pool.allocPoint != 0) {
+            return (block.number - _lastEmitBlock) * emitPerBlock * pool.allocPoint / totalAllocPoint;
+        }
+        return 0;
+    }
+
     function updatePool(uint256 pid) public override {
         PoolInfo storage pool = poolInfo[pid];
         uint256 _lastEmitBlock = pool.lastEmitBlock;

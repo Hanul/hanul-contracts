@@ -6,71 +6,66 @@ import "../token/interfaces/IFungibleToken.sol";
 
 contract BuyOrderBook is IBuyOrderBook {
     
-    IFungibleToken token;
-
     struct BuyOrder {
         address buyer;
         uint256 amount;
         uint256 price;
     }
-    BuyOrder[] public orders;
+    mapping(IFungibleToken => BuyOrder[]) public orders;
 
-    constructor(IFungibleToken _token) {
-        token = _token;
+    function count(IFungibleToken token) override external view returns (uint256) {
+        return orders[token].length;
     }
 
-    function count() override external view returns (uint256) {
-        return orders.length;
-    }
-
-    function get(uint256 orderId) override external view returns (address buyer, uint256 amount, uint256 price) {
-        BuyOrder memory order = orders[orderId];
+    function get(IFungibleToken token, uint256 orderId) override external view returns (address buyer, uint256 amount, uint256 price) {
+        BuyOrder memory order = orders[token][orderId];
         return (order.buyer, order.amount, order.price);
     }
 
-    function buy(uint256 amount) override payable external {
-        uint256 orderId = orders.length;
-        orders.push(BuyOrder({
+    function buy(IFungibleToken token, uint256 amount) override payable external {
+        BuyOrder[] storage _orders = orders[token];
+        uint256 orderId = _orders.length;
+        _orders.push(BuyOrder({
             buyer: msg.sender,
             amount: amount,
             price: msg.value
         }));
-        emit Buy(orderId, msg.sender, amount, msg.value);
+        emit Buy(token, orderId, msg.sender, amount, msg.value);
     }
 
-    function remove(uint256 orderId) internal {
-        delete orders[orderId];
-        emit Remove(orderId);
+    function remove(IFungibleToken token, uint256 orderId) internal {
+        delete orders[token][orderId];
+        emit Remove(token, orderId);
     }
 
-    function sell(uint256 orderId, uint256 amount) override public {
-        BuyOrder storage order = orders[orderId];
+    function sell(IFungibleToken token, uint256 orderId, uint256 amount) override public {
+        BuyOrder storage order = orders[token][orderId];
         uint256 price = order.price * amount / order.amount;
         token.transferFrom(msg.sender, order.buyer, amount);
         order.amount -= amount;
         order.price -= price;
         if (order.amount == 0) {
-            remove(orderId);
+            remove(token, orderId);
         }
         payable(msg.sender).transfer(price);
-        emit Sell(orderId, msg.sender, amount);
+        emit Sell(token, orderId, msg.sender, amount);
     }
 
-    function sellWithPermit(uint256 orderId, uint256 amount,
+    function sellWithPermit(IFungibleToken token, uint256 orderId, uint256 amount,
         uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) override external {
         token.permit(msg.sender, address(this), amount, deadline, v, r, s);
-        sell(orderId, amount);
+        sell(token, orderId, amount);
     }
 
-    function cancel(uint256 orderId) override external {
-        BuyOrder memory order = orders[orderId];
+    function cancel(IFungibleToken token, uint256 orderId) override external {
+        BuyOrder memory order = orders[token][orderId];
         require(order.buyer == msg.sender);
         payable(msg.sender).transfer(order.price);
-        remove(orderId);
-        emit Cancel(orderId);
+        remove(token, orderId);
+        emit Cancel(token, orderId);
     }
 }

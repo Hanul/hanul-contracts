@@ -20,5 +20,6 @@ interface IEmitter {
     );
     function totalAllocPoint() external view returns (uint256);
 
+    function pendingToken(uint256 pid) external view returns (uint256);
     function updatePool(uint256 pid) external;
 }

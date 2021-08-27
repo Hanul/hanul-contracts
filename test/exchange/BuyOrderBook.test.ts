@@ -28,7 +28,7 @@ describe("BuyOrderBook", () => {
         buyOrderBook = await deployContract(
             admin,
             BuyOrderBookArtifact,
-            [hanulCoin.address]
+            []
         ) as BuyOrderBook;
     })
 
@@ -36,30 +36,30 @@ describe("BuyOrderBook", () => {
         it("buy", async () => {
             const value = expandTo18Decimals(100)
             const price = expandTo18Decimals(1)
-            await expect(buyOrderBook.buy(value, { value: price }))
+            await expect(buyOrderBook.buy(hanulCoin.address, value, { value: price }))
                 .to.emit(buyOrderBook, "Buy")
-                .withArgs(0, admin.address, value, price)
-            expect(await buyOrderBook.get(0)).to.deep.eq([admin.address, value, price])
-            expect(await buyOrderBook.count()).to.eq(1)
+                .withArgs(hanulCoin.address, 0, admin.address, value, price)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq([admin.address, value, price])
+            expect(await buyOrderBook.count(hanulCoin.address)).to.eq(1)
         })
 
         it("sell all", async () => {
 
             const value = expandTo18Decimals(100)
             const price = expandTo18Decimals(1)
-            await expect(buyOrderBook.buy(value, { value: price }))
+            await expect(buyOrderBook.buy(hanulCoin.address, value, { value: price }))
                 .to.emit(buyOrderBook, "Buy")
-                .withArgs(0, admin.address, value, price)
-            expect(await buyOrderBook.get(0)).to.deep.eq([admin.address, value, price])
-            expect(await buyOrderBook.count()).to.eq(1)
+                .withArgs(hanulCoin.address, 0, admin.address, value, price)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq([admin.address, value, price])
+            expect(await buyOrderBook.count(hanulCoin.address)).to.eq(1)
 
             await hanulCoin.connect(other).approve(buyOrderBook.address, value);
-            await expect(buyOrderBook.connect(other).sell(0, value))
+            await expect(buyOrderBook.connect(other).sell(hanulCoin.address, 0, value))
                 .to.emit(buyOrderBook, "Sell")
-                .withArgs(0, other.address, value)
+                .withArgs(hanulCoin.address, 0, other.address, value)
                 .to.emit(buyOrderBook, "Remove")
-                .withArgs(0)
-            expect(await buyOrderBook.get(0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
+                .withArgs(hanulCoin.address, 0)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
 
             expect(await hanulCoin.balanceOf(admin.address)).to.eq(value)
         })
@@ -68,27 +68,27 @@ describe("BuyOrderBook", () => {
 
             const value = expandTo18Decimals(100)
             const price = expandTo18Decimals(2)
-            await expect(buyOrderBook.buy(value, { value: price }))
+            await expect(buyOrderBook.buy(hanulCoin.address, value, { value: price }))
                 .to.emit(buyOrderBook, "Buy")
-                .withArgs(0, admin.address, value, price)
-            expect(await buyOrderBook.get(0)).to.deep.eq([admin.address, value, price])
-            expect(await buyOrderBook.count()).to.eq(1)
+                .withArgs(hanulCoin.address, 0, admin.address, value, price)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq([admin.address, value, price])
+            expect(await buyOrderBook.count(hanulCoin.address)).to.eq(1)
 
             await hanulCoin.connect(other).approve(buyOrderBook.address, value);
 
-            await expect(buyOrderBook.connect(other).sell(0, expandTo18Decimals(50)))
+            await expect(buyOrderBook.connect(other).sell(hanulCoin.address, 0, expandTo18Decimals(50)))
                 .to.emit(buyOrderBook, "Sell")
-                .withArgs(0, other.address, expandTo18Decimals(50))
-            expect(await buyOrderBook.get(0)).to.deep.eq([admin.address, value.div(2), price.div(2)])
+                .withArgs(hanulCoin.address, 0, other.address, expandTo18Decimals(50))
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq([admin.address, value.div(2), price.div(2)])
 
             expect(await hanulCoin.balanceOf(admin.address)).to.eq(value.div(2))
 
-            await expect(buyOrderBook.connect(other).sell(0, expandTo18Decimals(50)))
+            await expect(buyOrderBook.connect(other).sell(hanulCoin.address, 0, expandTo18Decimals(50)))
                 .to.emit(buyOrderBook, "Sell")
-                .withArgs(0, other.address, expandTo18Decimals(50))
+                .withArgs(hanulCoin.address, 0, other.address, expandTo18Decimals(50))
                 .to.emit(buyOrderBook, "Remove")
-                .withArgs(0)
-            expect(await buyOrderBook.get(0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
+                .withArgs(hanulCoin.address, 0)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
 
             expect(await hanulCoin.balanceOf(admin.address)).to.eq(value)
         })
@@ -97,11 +97,11 @@ describe("BuyOrderBook", () => {
 
             const value = expandTo18Decimals(100)
             const price = expandTo18Decimals(1)
-            await expect(buyOrderBook.buy(value, { value: price }))
+            await expect(buyOrderBook.buy(hanulCoin.address, value, { value: price }))
                 .to.emit(buyOrderBook, "Buy")
-                .withArgs(0, admin.address, value, price)
-            expect(await buyOrderBook.get(0)).to.deep.eq([admin.address, value, price])
-            expect(await buyOrderBook.count()).to.eq(1)
+                .withArgs(hanulCoin.address, 0, admin.address, value, price)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq([admin.address, value, price])
+            expect(await buyOrderBook.count(hanulCoin.address)).to.eq(1)
 
             const nonce = await hanulCoin.nonces(other.address)
             const deadline = constants.MaxUint256
@@ -114,12 +114,12 @@ describe("BuyOrderBook", () => {
 
             const { v, r, s } = ecsign(Buffer.from(digest.slice(2), "hex"), Buffer.from(other.privateKey.slice(2), "hex"))
 
-            await expect(buyOrderBook.connect(other).sellWithPermit(0, value, deadline, v, hexlify(r), hexlify(s)))
+            await expect(buyOrderBook.connect(other).sellWithPermit(hanulCoin.address, 0, value, deadline, v, hexlify(r), hexlify(s)))
                 .to.emit(buyOrderBook, "Sell")
-                .withArgs(0, other.address, value)
+                .withArgs(hanulCoin.address, 0, other.address, value)
                 .to.emit(buyOrderBook, "Remove")
-                .withArgs(0)
-            expect(await buyOrderBook.get(0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
+                .withArgs(hanulCoin.address, 0)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
 
             expect(await hanulCoin.balanceOf(admin.address)).to.eq(value)
         })
@@ -127,18 +127,18 @@ describe("BuyOrderBook", () => {
         it("cancel", async () => {
             const value = expandTo18Decimals(100)
             const price = expandTo18Decimals(1)
-            await expect(buyOrderBook.buy(value, { value: price }))
+            await expect(buyOrderBook.buy(hanulCoin.address, value, { value: price }))
                 .to.emit(buyOrderBook, "Buy")
-                .withArgs(0, admin.address, value, price)
-            expect(await buyOrderBook.get(0)).to.deep.eq([admin.address, value, price])
-            expect(await buyOrderBook.count()).to.eq(1)
+                .withArgs(hanulCoin.address, 0, admin.address, value, price)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq([admin.address, value, price])
+            expect(await buyOrderBook.count(hanulCoin.address)).to.eq(1)
 
-            await expect(buyOrderBook.cancel(0))
+            await expect(buyOrderBook.cancel(hanulCoin.address, 0))
                 .to.emit(buyOrderBook, "Cancel")
-                .withArgs(0)
-            expect(await buyOrderBook.get(0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
+                .withArgs(hanulCoin.address, 0)
+            expect(await buyOrderBook.get(hanulCoin.address, 0)).to.deep.eq(["0x0000000000000000000000000000000000000000", BigNumber.from(0), BigNumber.from(0)])
 
-            await expect(buyOrderBook.connect(other).sell(0, value)).to.be.reverted
+            await expect(buyOrderBook.connect(other).sell(hanulCoin.address, 0, value)).to.be.reverted
         })
     })
 })

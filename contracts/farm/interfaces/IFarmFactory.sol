@@ -27,6 +27,8 @@ interface IFarmFactory {
         uint256 rewardDebt
     );
     function totalAllocPoint() external view returns (uint256);
+    
+    function pendingReward(uint256 pid, address user) external view returns (uint256);
 
     function deposit(uint256 pid, uint256 amount) external;
 
