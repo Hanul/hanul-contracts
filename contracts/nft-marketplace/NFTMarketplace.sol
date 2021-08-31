@@ -50,7 +50,7 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
     }
     mapping(INonFungibleToken => mapping(uint256 => Bidding[])) public biddings;
 
-    function sell(INonFungibleToken token, uint256 nftId, uint256 price) override external {
+    function sell(INonFungibleToken token, uint256 nftId, uint256 price) override public {
         require(token.ownerOf(nftId) == msg.sender && checkAuction(token, nftId) != true);
         token.transferFrom(msg.sender, address(this), nftId);
         sales[token][nftId] = Sale({
@@ -58,6 +58,16 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
             price: price
         });
         emit Sell(token, nftId, msg.sender, price);
+    }
+
+    function sellWithPermit(INonFungibleToken token, uint256 nftId, uint256 price,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) override external {
+        token.permit(address(this), nftId, deadline, v, r, s);
+        sell(token, nftId, price);
     }
 
     function checkSelling(INonFungibleToken token, uint256 nftId) override view public returns (bool) {
@@ -84,7 +94,7 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
         delete sales[token][nftId];
         token.transferFrom(address(this), msg.sender, nftId);
         distributeReward(token, sale.seller, msg.value);
-        emit Buy(token, nftId, msg.sender);
+        emit Buy(token, nftId, msg.sender, msg.value);
     }
 
     function cancelSale(INonFungibleToken token, uint256 nftId) override external {
@@ -126,7 +136,7 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
         emit AcceptOffer(token, nftId, offerId, msg.sender);
     }
 
-    function auction(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock) override external {
+    function auction(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock) override public {
         require(token.ownerOf(nftId) == msg.sender && checkSelling(token, nftId) != true);
         token.transferFrom(msg.sender, address(this), nftId);
         auctions[token][nftId] = AuctionInfo({
@@ -135,6 +145,16 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
             endBlock: endBlock
         });
         emit Auction(token, nftId, msg.sender, startPrice, endBlock);
+    }
+
+    function auctionWithPermit(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) override external {
+        token.permit(address(this), nftId, deadline, v, r, s);
+        auction(token, nftId, startPrice, endBlock);
     }
 
     function cancelAuction(INonFungibleToken token, uint256 nftId) override external {

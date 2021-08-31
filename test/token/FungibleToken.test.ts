@@ -11,7 +11,7 @@ import { getERC20ApprovalDigest } from "../shared/utils/standard";
 const { deployContract } = waffle;
 
 describe("FungibleToken", () => {
-    let fungibleToken: FungibleToken;
+    let token: FungibleToken;
 
     const provider = waffle.provider;
     const [admin, other] = provider.getWallets();
@@ -21,7 +21,7 @@ describe("FungibleToken", () => {
     const version = "1";
 
     beforeEach(async () => {
-        fungibleToken = await deployContract(
+        token = await deployContract(
             admin,
             FungibleTokenArtifact,
             [name, symbol, version]
@@ -30,19 +30,19 @@ describe("FungibleToken", () => {
 
     context("new FungibleToken", async () => {
         it("has given data", async () => {
-            expect(await fungibleToken.totalSupply()).to.be.equal(0)
-            expect(await fungibleToken.name()).to.be.equal(name)
-            expect(await fungibleToken.symbol()).to.be.equal(symbol)
-            expect(await fungibleToken.decimals()).to.be.equal(18)
-            expect(await fungibleToken.version()).to.be.equal(version)
+            expect(await token.totalSupply()).to.be.equal(0)
+            expect(await token.name()).to.be.equal(name)
+            expect(await token.symbol()).to.be.equal(symbol)
+            expect(await token.decimals()).to.be.equal(18)
+            expect(await token.version()).to.be.equal(version)
         })
 
         it("check the deployer balance", async () => {
-            expect(await fungibleToken.balanceOf(admin.address)).to.be.equal(0)
+            expect(await token.balanceOf(admin.address)).to.be.equal(0)
         })
 
         it("data for permit", async () => {
-            expect(await fungibleToken.DOMAIN_SEPARATOR()).to.eq(
+            expect(await token.DOMAIN_SEPARATOR()).to.eq(
                 keccak256(
                     defaultAbiCoder.encode(
                         ["bytes32", "bytes32", "bytes32", "uint256", "address"],
@@ -53,12 +53,12 @@ describe("FungibleToken", () => {
                             keccak256(toUtf8Bytes(name)),
                             keccak256(toUtf8Bytes(version)),
                             31337,
-                            fungibleToken.address
+                            token.address
                         ]
                     )
                 )
             )
-            expect(await fungibleToken.PERMIT_TYPEHASH()).to.eq(
+            expect(await token.PERMIT_TYPEHASH()).to.eq(
                 keccak256(toUtf8Bytes("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"))
             )
         })
@@ -66,10 +66,10 @@ describe("FungibleToken", () => {
         it("permit", async () => {
             const value = expandTo18Decimals(10)
 
-            const nonce = await fungibleToken.nonces(admin.address)
+            const nonce = await token.nonces(admin.address)
             const deadline = constants.MaxUint256
             const digest = await getERC20ApprovalDigest(
-                fungibleToken,
+                token,
                 { owner: admin.address, spender: other.address, value },
                 nonce,
                 deadline
@@ -77,11 +77,11 @@ describe("FungibleToken", () => {
 
             const { v, r, s } = ecsign(Buffer.from(digest.slice(2), "hex"), Buffer.from(admin.privateKey.slice(2), "hex"))
 
-            await expect(fungibleToken.permit(admin.address, other.address, value, deadline, v, hexlify(r), hexlify(s)))
-                .to.emit(fungibleToken, "Approval")
+            await expect(token.permit(admin.address, other.address, value, deadline, v, hexlify(r), hexlify(s)))
+                .to.emit(token, "Approval")
                 .withArgs(admin.address, other.address, value)
-            expect(await fungibleToken.allowance(admin.address, other.address)).to.eq(value)
-            expect(await fungibleToken.nonces(admin.address)).to.eq(BigNumber.from(1))
+            expect(await token.allowance(admin.address, other.address)).to.eq(value)
+            expect(await token.nonces(admin.address)).to.eq(BigNumber.from(1))
         })
     })
 })

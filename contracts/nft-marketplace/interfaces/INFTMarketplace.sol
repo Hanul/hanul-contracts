@@ -6,7 +6,7 @@ import "../../token/interfaces/INonFungibleToken.sol";
 interface INFTMarketplace {
 
     event Sell(INonFungibleToken indexed token, uint256 indexed nftId, address indexed owner, uint256 price);
-    event Buy(INonFungibleToken indexed token, uint256 indexed nftId, address indexed buyer);
+    event Buy(INonFungibleToken indexed token, uint256 indexed nftId, address indexed buyer, uint256 price);
     event CancelSale(INonFungibleToken indexed token, uint256 indexed nftId, address indexed owner);
 
     event Offer(INonFungibleToken indexed token, uint256 indexed nftId, uint256 indexed offerId, address offeror, uint256 price);
@@ -19,6 +19,13 @@ interface INFTMarketplace {
     event Claim(INonFungibleToken indexed token, uint256 indexed nftId, address indexed bidder, uint256 price);
     
     function sell(INonFungibleToken token, uint256 nftId, uint256 price) external;
+    function sellWithPermit(INonFungibleToken token, uint256 nftId, uint256 price,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
     function checkSelling(INonFungibleToken token, uint256 nftId) external returns (bool);
     function buy(INonFungibleToken token, uint256 nftId) payable external;
     function cancelSale(INonFungibleToken token, uint256 nftId) external;
@@ -28,6 +35,13 @@ interface INFTMarketplace {
     function acceptOffer(INonFungibleToken token, uint256 nftId, uint256 offerId) external;
 
     function auction(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock) external;
+    function auctionWithPermit(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
     function cancelAuction(INonFungibleToken token, uint256 nftId) external;
     function checkAuction(INonFungibleToken token, uint256 nftId) external returns (bool);
     function bid(INonFungibleToken token, uint256 nftId) payable external returns (uint256 biddingId);
