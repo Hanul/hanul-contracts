@@ -18,8 +18,8 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
     }
     mapping(INonFungibleToken => NFTDeployer) public nftDeployers;
 
-    function setNFTDeployer(INonFungibleToken token, address deployer, uint256 fee) onlyOwner external {
-        nftDeployers[token] = NFTDeployer({
+    function setNFTDeployer(INonFungibleToken nft, address deployer, uint256 fee) onlyOwner external {
+        nftDeployers[nft] = NFTDeployer({
             deployer: deployer,
             fee: fee
         });
@@ -50,35 +50,35 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
     }
     mapping(INonFungibleToken => mapping(uint256 => Bidding[])) public biddings;
 
-    function sell(INonFungibleToken token, uint256 nftId, uint256 price) override public {
-        require(token.ownerOf(nftId) == msg.sender && checkAuction(token, nftId) != true);
-        token.transferFrom(msg.sender, address(this), nftId);
-        sales[token][nftId] = Sale({
+    function sell(INonFungibleToken nft, uint256 nftId, uint256 price) override public {
+        require(nft.ownerOf(nftId) == msg.sender && checkAuction(nft, nftId) != true);
+        nft.transferFrom(msg.sender, address(this), nftId);
+        sales[nft][nftId] = Sale({
             seller: msg.sender,
             price: price
         });
-        emit Sell(token, nftId, msg.sender, price);
+        emit Sell(nft, nftId, msg.sender, price);
     }
 
-    function sellWithPermit(INonFungibleToken token, uint256 nftId, uint256 price,
+    function sellWithPermit(INonFungibleToken nft, uint256 nftId, uint256 price,
         uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) override external {
-        token.permit(address(this), nftId, deadline, v, r, s);
-        sell(token, nftId, price);
+        nft.permit(address(this), nftId, deadline, v, r, s);
+        sell(nft, nftId, price);
     }
 
-    function checkSelling(INonFungibleToken token, uint256 nftId) override view public returns (bool) {
-        return sales[token][nftId].seller != address(0);
+    function checkSelling(INonFungibleToken nft, uint256 nftId) override view public returns (bool) {
+        return sales[nft][nftId].seller != address(0);
     }
 
-    function distributeReward(INonFungibleToken token, address to, uint256 price) internal {
+    function distributeReward(INonFungibleToken nft, address to, uint256 price) internal {
         uint256 _ownerFee = price * ownerFee / 1e18;
         payable(owner()).transfer(_ownerFee);
         
-        NFTDeployer memory deployer = nftDeployers[token];
+        NFTDeployer memory deployer = nftDeployers[nft];
         if (deployer.deployer != address(0)) {
             uint256 deployerFee = price * deployer.fee / 1e18;
             payable(deployer.deployer).transfer(deployerFee);
@@ -88,92 +88,92 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
         }
     }
 
-    function buy(INonFungibleToken token, uint256 nftId) payable override external {
-        Sale memory sale = sales[token][nftId];
+    function buy(INonFungibleToken nft, uint256 nftId) payable override external {
+        Sale memory sale = sales[nft][nftId];
         require(sale.seller != address(0) && sale.price == msg.value);
-        delete sales[token][nftId];
-        token.transferFrom(address(this), msg.sender, nftId);
-        distributeReward(token, sale.seller, msg.value);
-        emit Buy(token, nftId, msg.sender, msg.value);
+        delete sales[nft][nftId];
+        nft.transferFrom(address(this), msg.sender, nftId);
+        distributeReward(nft, sale.seller, msg.value);
+        emit Buy(nft, nftId, msg.sender, msg.value);
     }
 
-    function cancelSale(INonFungibleToken token, uint256 nftId) override external {
-        address seller = sales[token][nftId].seller;
+    function cancelSale(INonFungibleToken nft, uint256 nftId) override external {
+        address seller = sales[nft][nftId].seller;
         require(seller == msg.sender);
-        token.transferFrom(address(this), seller, nftId);
-        delete sales[token][nftId];
-        emit CancelSale(token, nftId, msg.sender);
+        nft.transferFrom(address(this), seller, nftId);
+        delete sales[nft][nftId];
+        emit CancelSale(nft, nftId, msg.sender);
     }
 
-    function offer(INonFungibleToken token, uint256 nftId) payable override external returns (uint256 offerId) {
+    function offer(INonFungibleToken nft, uint256 nftId) payable override external returns (uint256 offerId) {
         require(msg.value > 0);
-        OfferInfo[] storage os = offers[token][nftId];
+        OfferInfo[] storage os = offers[nft][nftId];
         offerId = os.length;
         os.push(OfferInfo({
             offeror: msg.sender,
             price: msg.value
         }));
-        emit Offer(token, nftId, offerId, msg.sender, msg.value);
+        emit Offer(nft, nftId, offerId, msg.sender, msg.value);
     }
 
-    function cancelOffer(INonFungibleToken token, uint256 nftId, uint256 offerId) override external {
-        OfferInfo[] storage os = offers[token][nftId];
+    function cancelOffer(INonFungibleToken nft, uint256 nftId, uint256 offerId) override external {
+        OfferInfo[] storage os = offers[nft][nftId];
         OfferInfo memory _offer = os[offerId];
         require(_offer.offeror == msg.sender);
         uint256 price = _offer.price;
         delete os[offerId];
         payable(msg.sender).transfer(price);
-        emit CancelOffer(token, nftId, offerId, _offer.offeror);
+        emit CancelOffer(nft, nftId, offerId, _offer.offeror);
     }
 
-    function acceptOffer(INonFungibleToken token, uint256 nftId, uint256 offerId) override external {
-        OfferInfo[] storage os = offers[token][nftId];
+    function acceptOffer(INonFungibleToken nft, uint256 nftId, uint256 offerId) override external {
+        OfferInfo[] storage os = offers[nft][nftId];
         OfferInfo memory _offer = os[offerId];
-        token.transferFrom(msg.sender, _offer.offeror, nftId);
+        nft.transferFrom(msg.sender, _offer.offeror, nftId);
         uint256 price = _offer.price;
         delete os[offerId];
-        distributeReward(token, msg.sender, price);
-        emit AcceptOffer(token, nftId, offerId, msg.sender);
+        distributeReward(nft, msg.sender, price);
+        emit AcceptOffer(nft, nftId, offerId, msg.sender);
     }
 
-    function auction(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock) override public {
-        require(token.ownerOf(nftId) == msg.sender && checkSelling(token, nftId) != true);
-        token.transferFrom(msg.sender, address(this), nftId);
-        auctions[token][nftId] = AuctionInfo({
+    function auction(INonFungibleToken nft, uint256 nftId, uint256 startPrice, uint256 endBlock) override public {
+        require(nft.ownerOf(nftId) == msg.sender && checkSelling(nft, nftId) != true);
+        nft.transferFrom(msg.sender, address(this), nftId);
+        auctions[nft][nftId] = AuctionInfo({
             seller: msg.sender,
             startPrice: startPrice,
             endBlock: endBlock
         });
-        emit Auction(token, nftId, msg.sender, startPrice, endBlock);
+        emit Auction(nft, nftId, msg.sender, startPrice, endBlock);
     }
 
-    function auctionWithPermit(INonFungibleToken token, uint256 nftId, uint256 startPrice, uint256 endBlock,
+    function auctionWithPermit(INonFungibleToken nft, uint256 nftId, uint256 startPrice, uint256 endBlock,
         uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) override external {
-        token.permit(address(this), nftId, deadline, v, r, s);
-        auction(token, nftId, startPrice, endBlock);
+        nft.permit(address(this), nftId, deadline, v, r, s);
+        auction(nft, nftId, startPrice, endBlock);
     }
 
-    function cancelAuction(INonFungibleToken token, uint256 nftId) override external {
-        require(biddings[token][nftId].length == 0);
-        address seller = auctions[token][nftId].seller;
+    function cancelAuction(INonFungibleToken nft, uint256 nftId) override external {
+        require(biddings[nft][nftId].length == 0);
+        address seller = auctions[nft][nftId].seller;
         require(seller == msg.sender);
-        token.transferFrom(address(this), seller, nftId);
-        delete auctions[token][nftId];
-        emit CancelAuction(token, nftId, msg.sender);
+        nft.transferFrom(address(this), seller, nftId);
+        delete auctions[nft][nftId];
+        emit CancelAuction(nft, nftId, msg.sender);
     }
 
-    function checkAuction(INonFungibleToken token, uint256 nftId) override view public returns (bool) {
-        return auctions[token][nftId].seller != address(0);
+    function checkAuction(INonFungibleToken nft, uint256 nftId) override view public returns (bool) {
+        return auctions[nft][nftId].seller != address(0);
     }
 
-    function bid(INonFungibleToken token, uint256 nftId) payable override external returns (uint256 biddingId) {
-        AuctionInfo memory _auction = auctions[token][nftId];
+    function bid(INonFungibleToken nft, uint256 nftId) payable override external returns (uint256 biddingId) {
+        AuctionInfo memory _auction = auctions[nft][nftId];
         require(_auction.seller != address(0) && block.number < _auction.endBlock);
-        Bidding[] storage bs = biddings[token][nftId];
+        Bidding[] storage bs = biddings[nft][nftId];
         biddingId = bs.length;
         if (biddingId == 0) {
             require(_auction.startPrice <= msg.value);
@@ -186,18 +186,18 @@ contract NFTMarketplace is Ownable, INFTMarketplace {
             bidder: msg.sender,
             price: msg.value
         }));
-        emit Bid(token, nftId, msg.sender, msg.value);
+        emit Bid(nft, nftId, msg.sender, msg.value);
     }
 
-    function claim(INonFungibleToken token, uint256 nftId) override external {
-        AuctionInfo memory _auction = auctions[token][nftId];
-        Bidding[] memory bs = biddings[token][nftId];
+    function claim(INonFungibleToken nft, uint256 nftId) override external {
+        AuctionInfo memory _auction = auctions[nft][nftId];
+        Bidding[] memory bs = biddings[nft][nftId];
         Bidding memory bidding = bs[bs.length - 1];
         require(bidding.bidder == msg.sender && block.number >= _auction.endBlock);
-        delete auctions[token][nftId];
-        delete biddings[token][nftId];
-        token.transferFrom(address(this), msg.sender, nftId);
-        distributeReward(token, _auction.seller, bidding.price);
-        emit Claim(token, nftId, msg.sender, bidding.price);
+        delete auctions[nft][nftId];
+        delete biddings[nft][nftId];
+        nft.transferFrom(address(this), msg.sender, nftId);
+        distributeReward(nft, _auction.seller, bidding.price);
+        emit Claim(nft, nftId, msg.sender, bidding.price);
     }
 }

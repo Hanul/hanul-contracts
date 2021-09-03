@@ -29,7 +29,7 @@ contract Dividend is FungibleToken, IDividend {
         uint256 balance = token.balanceOf(address(this));
         uint256 value = balance - currentBalance;
         if (value > 0) {
-            pointsPerShare += value * pointsMultiplier / totalSupply();
+            pointsPerShare += value * pointsMultiplier / totalBalance;
             emit Distribute(msg.sender, value);
         }
         currentBalance = balance;
@@ -46,7 +46,7 @@ contract Dividend is FungibleToken, IDividend {
         uint256 balance = token.balanceOf(address(this));
         uint256 value = balance - currentBalance;
         if (value > 0) {
-            _pointsPerShare += value * pointsMultiplier / totalSupply();
+            _pointsPerShare += value * pointsMultiplier / totalBalance;
         }
         return uint256(int256(_pointsPerShare * balanceOf(owner)) + pointsCorrection[owner]) / pointsMultiplier;
     }
@@ -63,7 +63,7 @@ contract Dividend is FungibleToken, IDividend {
         return _accumulativeOf(owner) - claimed[owner];
     }
 
-    function claim() override public {
+    function claim() override external {
         updateBalance();
         uint256 claimable = _claimableOf(msg.sender);
         if (claimable > 0) {
