@@ -99,6 +99,7 @@ contract ERC20NFTMarketplace is Ownable, IERC20NFTMarketplace {
         require(sale.seller != address(0));
         delete sales[nft][nftId];
         nft.transferFrom(address(this), msg.sender, nftId);
+        token.transferFrom(msg.sender, address(this), sale.price);
         distributeReward(nft, sale.seller, sale.price);
         emit Buy(nft, nftId, msg.sender, sale.price);
     }
