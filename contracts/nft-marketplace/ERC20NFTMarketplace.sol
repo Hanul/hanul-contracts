@@ -12,7 +12,7 @@ contract ERC20NFTMarketplace is Ownable, IERC20NFTMarketplace {
         token = _token;
     }
 
-    uint256 public ownerFee = 25 * 1e18 / 100;
+    uint256 public ownerFee = 25 * 1e4 / 1000;
 
     function setOwnerFee(uint256 fee) onlyOwner external {
         ownerFee = fee;
@@ -20,7 +20,7 @@ contract ERC20NFTMarketplace is Ownable, IERC20NFTMarketplace {
     
     struct NFTDeployer {
         address deployer;
-        uint256 fee; // 1e18
+        uint256 fee; // 1e4
     }
     mapping(INonFungibleToken => NFTDeployer) public nftDeployers;
 
@@ -81,12 +81,12 @@ contract ERC20NFTMarketplace is Ownable, IERC20NFTMarketplace {
     }
 
     function distributeReward(INonFungibleToken nft, address to, uint256 price) internal {
-        uint256 _ownerFee = price * ownerFee / 1e18;
+        uint256 _ownerFee = price * ownerFee / 1e4;
         token.transfer(owner(), _ownerFee);
         
         NFTDeployer memory deployer = nftDeployers[nft];
         if (deployer.deployer != address(0)) {
-            uint256 deployerFee = price * deployer.fee / 1e18;
+            uint256 deployerFee = price * deployer.fee / 1e4;
             token.transfer(deployer.deployer, deployerFee);
             token.transfer(to, price - deployerFee - _ownerFee);
         } else {
